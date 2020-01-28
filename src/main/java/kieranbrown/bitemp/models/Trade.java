@@ -1,17 +1,13 @@
 package kieranbrown.bitemp.models;
 
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.math.BigDecimal;
-import java.util.Date;
 
 @Entity
 @Table(name = "trade_data", schema = "reporting")
-public class Trade {
-    @EmbeddedId
-    private TradeKey tradeKey;
+public class Trade extends BitemporalModel {
 
     @Column(nullable = false)
     private String stock;
@@ -22,19 +18,6 @@ public class Trade {
     @Column(nullable = false)
     private int volume;
 
-    //TODO: Should these be wrapped into another class?
-    @Column(nullable = false)
-    private Date validTimeStart;
-
-    @Column(nullable = false)
-    private Date validTimeEnd;
-
-    @Column(nullable = false)
-    private Date systemTimeStart;
-
-    @Column(nullable = false)
-    private Date systemTimeEnd;
-
     //TODO: enum?
     @Column(nullable = false)
     private char buySellFlag;
@@ -42,4 +25,44 @@ public class Trade {
     //TODO: enum?
     @Column(nullable = false)
     private char marketLimitFlag;
+
+    public String getStock() {
+        return stock;
+    }
+
+    public void setStock(final String stock) {
+        this.stock = stock;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(final BigDecimal price) {
+        this.price = price;
+    }
+
+    public int getVolume() {
+        return volume;
+    }
+
+    public void setVolume(final int volume) {
+        this.volume = volume;
+    }
+
+    public char getBuySellFlag() {
+        return buySellFlag;
+    }
+
+    public void setBuySellFlag(final char buySellFlag) {
+        this.buySellFlag = buySellFlag;
+    }
+
+    public char getMarketLimitFlag() {
+        return marketLimitFlag;
+    }
+
+    public void setMarketLimitFlag(final char marketLimitFlag) {
+        this.marketLimitFlag = marketLimitFlag;
+    }
 }
