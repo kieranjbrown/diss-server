@@ -31,9 +31,9 @@ class BitemporalRepositoryTest {
                 setPrice(new BigDecimal("140.171")).
                 setVolume(200).
                 setSystemTimeStart(new Date(2009, 10, 10, 10, 10, 37)).
-                setSystemTimeEnd(new Date(2009, 10, 10, 12, 10, 37)).
-                setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0)).
-                setValidTimeEnd(new Date(2009, 10, 10, 12, 8, 30));
+//                setSystemTimeEnd(new Date(2009, 10, 10, 12, 10, 37)).
+        setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0));
+//                setValidTimeEnd(new Date(2009, 10, 10, 12, 8, 30));
 
         repository.save(trade);
 

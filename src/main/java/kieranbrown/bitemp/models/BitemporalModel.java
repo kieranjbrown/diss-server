@@ -6,6 +6,7 @@ import javax.persistence.MappedSuperclass;
 import java.util.Date;
 
 @MappedSuperclass
+@SuppressWarnings("unchecked")
 public abstract class BitemporalModel<T> {
     @EmbeddedId
     private BitemporalKey tradeKey;
@@ -14,13 +15,13 @@ public abstract class BitemporalModel<T> {
     @Column(nullable = false)
     private Date validTimeStart;
 
-    @Column(nullable = false)
+    @Column
     private Date validTimeEnd;
 
     @Column(nullable = false)
     private Date systemTimeStart;
 
-    @Column(nullable = false)
+    @Column
     private Date systemTimeEnd;
 
     public BitemporalKey getTradeKey() {
