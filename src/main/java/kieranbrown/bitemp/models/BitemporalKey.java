@@ -14,10 +14,13 @@ import static org.apache.commons.lang3.Validate.isTrue;
 @Embeddable
 public class BitemporalKey implements Serializable {
     @Column(name = "trade_id", nullable = false)
-    private final UUID tradeId;
+    private UUID tradeId;
 
     @Column(name = "version", nullable = false)
-    private final int version;
+    private int version;
+
+    private BitemporalKey() {
+    }
 
     private BitemporalKey(final UUID tradeId,
                           final int version) {

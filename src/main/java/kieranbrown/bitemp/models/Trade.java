@@ -9,6 +9,13 @@ import java.math.BigDecimal;
 @Table(name = "trade_data", schema = "reporting")
 public class Trade extends BitemporalModel {
 
+//    public static class Builder {
+//        private BitemporalKey key;
+//        private String stock;
+//        private BigDecimal price;
+//
+//    }
+
     @Column(nullable = false)
     private String stock;
 
