@@ -10,25 +10,32 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class BitemporalKeyTest {
 
     @Test
-    void constructorThrowsForInvalidInput() {
-        assertThat(assertThrows(NullPointerException.class, () -> new BitemporalKey(null, 1)))
-                .hasMessage("tradeId cannot be null");
-
-        assertThat(assertThrows(IllegalArgumentException.class, () -> new BitemporalKey(UUID.randomUUID(), -1)))
-                .hasMessage("version cannot be negative");
-    }
-
-    @Test
     void setTradeIdThrowsForNullId() {
-        final BitemporalKey key = new BitemporalKey(UUID.randomUUID(), 2000);
-        assertThat(assertThrows(NullPointerException.class, () -> key.setTradeId(null)))
+        final BitemporalKey.Builder builder = new BitemporalKey.Builder()
+                .setTradeId(UUID.randomUUID())
+                .setVersion(2000);
+        assertThat(assertThrows(NullPointerException.class, () -> builder.setTradeId(null)))
                 .hasMessage("tradeId cannot be null");
     }
 
     @Test
     void setVersionThrowsForInvalidVersion() {
-        final BitemporalKey key = new BitemporalKey(UUID.randomUUID(), 2000);
-        assertThat(assertThrows(IllegalArgumentException.class, () -> key.setVersion(-5000)))
+        final BitemporalKey.Builder builder = new BitemporalKey.Builder()
+                .setTradeId(UUID.randomUUID())
+                .setVersion(2000);
+        assertThat(assertThrows(IllegalArgumentException.class, () -> builder.setVersion(-5000)))
                 .hasMessage("version cannot be negative");
+    }
+
+    @Test
+    void builderSetsValues() {
+        final UUID tradeId = UUID.randomUUID();
+        final BitemporalKey key = new BitemporalKey.Builder()
+                .setTradeId(tradeId)
+                .setVersion(2000)
+                .build();
+
+        assertThat(key.getTradeId()).isNotNull().isEqualTo(tradeId);
+        assertThat(key.getVersion()).isEqualTo(2000);
     }
 }
