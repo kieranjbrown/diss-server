@@ -24,16 +24,16 @@ class BitemporalRepositoryTest {
     void canPersistBitemporalModel() {
         final Trade trade = new Trade();
         final BitemporalKey key = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
-        trade.setTradeKey(key);
-        trade.setStock("GOOGL");
-        trade.setBuySellFlag('B');
-        trade.setMarketLimitFlag('M');
-        trade.setPrice(new BigDecimal("140.171"));
-        trade.setVolume(200);
-        trade.setSystemTimeStart(new Date(2009, 10, 10, 10, 10, 37));
-        trade.setSystemTimeEnd(new Date(2009, 10, 10, 12, 10, 37));
-        trade.setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0));
-        trade.setValidTimeEnd(new Date(2009, 10, 10, 12, 8, 30));
+        trade.setTradeKey(key).
+                setStock("GOOGL").
+                setBuySellFlag('B').
+                setMarketLimitFlag('M').
+                setPrice(new BigDecimal("140.171")).
+                setVolume(200).
+                setSystemTimeStart(new Date(2009, 10, 10, 10, 10, 37)).
+                setSystemTimeEnd(new Date(2009, 10, 10, 12, 10, 37)).
+                setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0)).
+                setValidTimeEnd(new Date(2009, 10, 10, 12, 8, 30));
 
         repository.save(trade);
 

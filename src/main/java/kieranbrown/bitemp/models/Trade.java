@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "trade_data", schema = "reporting")
-public class Trade extends BitemporalModel {
+public class Trade extends BitemporalModel<Trade> {
 
 //    public static class Builder {
 //        private BitemporalKey key;
@@ -37,39 +37,44 @@ public class Trade extends BitemporalModel {
         return stock;
     }
 
-    public void setStock(final String stock) {
+    public Trade setStock(final String stock) {
         this.stock = stock;
+        return this;
     }
 
     public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(final BigDecimal price) {
+    public Trade setPrice(final BigDecimal price) {
         this.price = price;
+        return this;
     }
 
     public int getVolume() {
         return volume;
     }
 
-    public void setVolume(final int volume) {
+    public Trade setVolume(final int volume) {
         this.volume = volume;
+        return this;
     }
 
     public char getBuySellFlag() {
         return buySellFlag;
     }
 
-    public void setBuySellFlag(final char buySellFlag) {
+    public Trade setBuySellFlag(final char buySellFlag) {
         this.buySellFlag = buySellFlag;
+        return this;
     }
 
     public char getMarketLimitFlag() {
         return marketLimitFlag;
     }
 
-    public void setMarketLimitFlag(final char marketLimitFlag) {
+    public Trade setMarketLimitFlag(final char marketLimitFlag) {
         this.marketLimitFlag = marketLimitFlag;
+        return this;
     }
 }

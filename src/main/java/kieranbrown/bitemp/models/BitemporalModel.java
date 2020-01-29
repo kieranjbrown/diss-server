@@ -6,7 +6,7 @@ import javax.persistence.MappedSuperclass;
 import java.util.Date;
 
 @MappedSuperclass
-public abstract class BitemporalModel {
+public abstract class BitemporalModel<T> {
     @EmbeddedId
     private BitemporalKey tradeKey;
 
@@ -27,39 +27,44 @@ public abstract class BitemporalModel {
         return tradeKey;
     }
 
-    public void setTradeKey(final BitemporalKey tradeKey) {
+    public T setTradeKey(final BitemporalKey tradeKey) {
         this.tradeKey = tradeKey;
+        return (T) this;
     }
 
     public Date getValidTimeStart() {
         return new Date(validTimeStart.getTime());
     }
 
-    public void setValidTimeStart(final Date validTimeStart) {
+    public T setValidTimeStart(final Date validTimeStart) {
         this.validTimeStart = new Date(validTimeStart.getTime());
+        return (T) this;
     }
 
     public Date getValidTimeEnd() {
         return new Date(validTimeEnd.getTime());
     }
 
-    public void setValidTimeEnd(final Date validTimeEnd) {
+    public T setValidTimeEnd(final Date validTimeEnd) {
         this.validTimeEnd = new Date(validTimeEnd.getTime());
+        return (T) this;
     }
 
     public Date getSystemTimeStart() {
         return new Date(systemTimeStart.getTime());
     }
 
-    public void setSystemTimeStart(final Date systemTimeStart) {
+    public T setSystemTimeStart(final Date systemTimeStart) {
         this.systemTimeStart = new Date(systemTimeStart.getTime());
+        return (T) this;
     }
 
     public Date getSystemTimeEnd() {
         return new Date(systemTimeEnd.getTime());
     }
 
-    public void setSystemTimeEnd(final Date systemTimeEnd) {
+    public T setSystemTimeEnd(final Date systemTimeEnd) {
         this.systemTimeEnd = new Date(systemTimeEnd.getTime());
+        return (T) this;
     }
 }
