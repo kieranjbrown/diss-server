@@ -7,7 +7,7 @@ import java.util.Date;
 
 @MappedSuperclass
 @SuppressWarnings("unchecked")
-public abstract class BitemporalModel<T> {
+public abstract class BitemporalModel<T extends BitemporalModel> {
     @EmbeddedId
     private BitemporalKey tradeKey;
 
