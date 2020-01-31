@@ -1,20 +1,13 @@
 package kieranbrown.bitemp.models;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Table;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "trade_data", schema = "reporting")
+@Entity(name = "reporting.trade_data")
 public class Trade extends BitemporalModel<Trade> {
-
-//    public static class Builder {
-//        private BitemporalKey key;
-//        private String stock;
-//        private BigDecimal price;
-//
-//    }
 
     @Column(nullable = false)
     private String stock;
@@ -26,11 +19,11 @@ public class Trade extends BitemporalModel<Trade> {
     private int volume;
 
     //TODO: enum?
-    @Column(nullable = false)
+    @Column(nullable = false, name = "buy_sell_flag")
     private char buySellFlag;
 
     //TODO: enum?
-    @Column(nullable = false)
+    @Column(nullable = false, name = "market_limit_flag")
     private char marketLimitFlag;
 
     public String getStock() {
@@ -53,6 +46,18 @@ public class Trade extends BitemporalModel<Trade> {
 
     public int getVolume() {
         return volume;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("stock", stock)
+                .append("price", price)
+                .append("volume", volume)
+                .append("buySellFlag", buySellFlag)
+                .append("marketLimitFlag", marketLimitFlag)
+                .append("identifyingInformation", super.toString())
+                .toString();
     }
 
     public Trade setVolume(final int volume) {

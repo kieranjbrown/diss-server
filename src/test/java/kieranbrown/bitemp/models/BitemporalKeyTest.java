@@ -15,7 +15,7 @@ class BitemporalKeyTest {
                 .setTradeId(UUID.randomUUID())
                 .setVersion(2000);
         assertThat(assertThrows(NullPointerException.class, () -> builder.setTradeId(null)))
-                .hasMessage("tradeId cannot be null");
+                .hasMessage("id cannot be null");
     }
 
     @Test
@@ -35,7 +35,7 @@ class BitemporalKeyTest {
                 .setVersion(2000)
                 .build();
 
-        assertThat(key.getTradeId()).isNotNull().isEqualTo(tradeId);
+        assertThat(key.getId()).isNotNull().isEqualTo(tradeId);
         assertThat(key.getVersion()).isEqualTo(2000);
     }
 }
