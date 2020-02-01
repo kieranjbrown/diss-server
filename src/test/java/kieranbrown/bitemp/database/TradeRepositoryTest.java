@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -33,7 +34,7 @@ class TradeRepositoryTest {
                 .setMarketLimitFlag('M')
                 .setPrice(new BigDecimal("140.171"))
                 .setVolume(200)
-                .setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0));
+                .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
         repository.save(trade);
 
@@ -46,8 +47,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("volume", 200)
                 .hasFieldOrPropertyWithValue("tradeKey", key)
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2009, 10, 10, 9, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(9999, 12, 31, 0, 0, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
 
         assertThat(retrievedTrade.getSystemTimeStart()).isAfter(now);
     }
@@ -66,8 +67,8 @@ class TradeRepositoryTest {
                 .setPrice(new BigDecimal("140.171"))
                 .setVolume(200)
                 .setSystemTimeEnd(new Date(2009, 10, 10, 10, 30, 0))
-                .setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0))
-                .setValidTimeEnd(new Date(2009, 10, 10, 9, 57, 0));
+                .setValidTimeStart(LocalDate.of(2009, 10, 10))
+                .setValidTimeEnd(LocalDate.of(2009, 10, 10));
 
         trade2.setTradeKey(key2)
                 .setStock("GOOGL")
@@ -76,7 +77,7 @@ class TradeRepositoryTest {
                 .setPrice(new BigDecimal("142.120"))
                 .setVolume(190)
                 .setSystemTimeStart(new Date(2009, 10, 10, 10, 30, 0))
-                .setValidTimeStart(new Date(2009, 10, 10, 9, 57, 0));
+                .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
         repository.save(trade1);
         repository.save(trade2);
@@ -91,8 +92,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key2)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2009, 10, 10, 10, 30, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2009, 10, 10, 9, 57, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(9999, 12, 31, 0, 0, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
     }
 
     @Test
@@ -110,8 +111,8 @@ class TradeRepositoryTest {
                 .setVolume(200)
                 .setSystemTimeStart(new Date(2009, 10, 10, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2009, 10, 10, 3, 30, 0))
-                .setValidTimeStart(new Date(2009, 10, 10, 9, 30, 0))
-                .setValidTimeEnd(new Date(2009, 10, 10, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2009, 10, 10))
+                .setValidTimeEnd(LocalDate.of(2009, 10, 10));
 
         trade2.setTradeKey(key2)
                 .setStock("GOOGL")
@@ -120,7 +121,7 @@ class TradeRepositoryTest {
                 .setPrice(new BigDecimal("142.120"))
                 .setVolume(190)
                 .setSystemTimeStart(new Date(2009, 10, 10, 3, 30, 0))
-                .setValidTimeStart(new Date(2009, 10, 10, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
         repository.save(trade1);
         repository.save(trade2);
@@ -136,8 +137,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key1)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2009, 10, 10, 10, 0, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2009, 10, 10, 3, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2009, 10, 10, 9, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(2009, 10, 10, 2, 57, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2009, 10, 10));
 
         assertThat(retrievedTrades.get(1)).isNotNull()
                 .hasFieldOrPropertyWithValue("stock", "GOOGL")
@@ -148,8 +149,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key2)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2009, 10, 10, 3, 30, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2009, 10, 10, 2, 57, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(9999, 12, 31, 0, 0, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
     }
 
     @Test
@@ -171,8 +172,8 @@ class TradeRepositoryTest {
                 .setVolume(200)
                 .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 10, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 15, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
         trade2.setTradeKey(key2)
                 .setStock("AAPl")
@@ -182,8 +183,8 @@ class TradeRepositoryTest {
                 .setVolume(195)
                 .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 9, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 15, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
         trade3.setTradeKey(key3)
                 .setStock("MSFT")
@@ -193,8 +194,8 @@ class TradeRepositoryTest {
                 .setVolume(199)
                 .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 13, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 19, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 13))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
         repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
@@ -210,8 +211,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key1)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2020, 1, 10, 9, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(2020, 1, 15, 2, 57, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
     }
 
     @Test
@@ -234,8 +235,8 @@ class TradeRepositoryTest {
                 .setVolume(200)
                 .setSystemTimeStart(new Date(2020, 1, 15, 3, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 15, 10, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 10, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 15, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
         trade2.setTradeKey(key2)
                 .setStock("AAPL")
@@ -245,8 +246,8 @@ class TradeRepositoryTest {
                 .setVolume(195)
                 .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 9, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 15, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
         trade3.setTradeKey(key3)
                 .setStock("MSFT")
@@ -256,8 +257,8 @@ class TradeRepositoryTest {
                 .setVolume(199)
                 .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 13, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 19, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 13))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
         trade4.setTradeKey(key4)
                 .setStock("EBAY")
@@ -267,8 +268,8 @@ class TradeRepositoryTest {
                 .setVolume(110)
                 .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 12, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 13, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 19, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 13))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
         repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
@@ -284,8 +285,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key2)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 9, 10, 0, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2020, 1, 9, 9, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(2020, 1, 15, 2, 57, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 9))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
 
         assertThat(trades.get(1)).isNotNull()
                 .hasFieldOrPropertyWithValue("stock", "MSFT")
@@ -296,8 +297,8 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key3)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2020, 1, 13, 9, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(2020, 1, 19, 2, 57, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 13))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 19));
     }
 
     @Test
@@ -319,8 +320,8 @@ class TradeRepositoryTest {
                 .setVolume(200)
                 .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 10, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 15, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
         trade2.setTradeKey(key2)
                 .setStock("AAPl")
@@ -330,8 +331,8 @@ class TradeRepositoryTest {
                 .setVolume(195)
                 .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 20, 0, 0, 0))
-                .setValidTimeStart(new Date(2020, 1, 9, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 15, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
         trade3.setTradeKey(key3)
                 .setStock("MSFT")
@@ -341,8 +342,8 @@ class TradeRepositoryTest {
                 .setVolume(199)
                 .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
                 .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
-                .setValidTimeStart(new Date(2020, 1, 13, 9, 30, 0))
-                .setValidTimeEnd(new Date(2020, 1, 19, 2, 57, 0));
+                .setValidTimeStart(LocalDate.of(2020, 1, 13))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
         repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
@@ -358,7 +359,7 @@ class TradeRepositoryTest {
                 .hasFieldOrPropertyWithValue("tradeKey", key1)
                 .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeStart", new Date(2020, 1, 10, 9, 30, 0))
-                .hasFieldOrPropertyWithValue("validTimeEnd", new Date(2020, 1, 15, 2, 57, 0));
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
     }
 }
