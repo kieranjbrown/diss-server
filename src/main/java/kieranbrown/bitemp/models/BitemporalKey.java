@@ -17,6 +17,7 @@ public class BitemporalKey implements Serializable {
     @Column(name = "id", nullable = false)
     private UUID id;
 
+    //TODO: This should probably be valid time start / end? gonna make updates very difficult presumably
     @Column(name = "version", nullable = false)
     private int version;
 
