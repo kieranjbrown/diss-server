@@ -18,10 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringJUnitConfig
 @DataJpaTest
-class TradeRepositoryTest {
+class TradeReadRepositoryTest {
 
     @Autowired
-    private TradeRepository repository;
+    private TradeReadRepository repository;
 
     @Test
     void canPersistBitemporalModel() {
@@ -82,7 +82,7 @@ class TradeRepositoryTest {
         repository.save(trade1);
         repository.save(trade2);
         System.out.println();
-        final Trade retrievedTrade = repository.findMostRecent(tradeId);
+        final Trade retrievedTrade = repository.findMostRecentBySystemTime(tradeId);
         assertThat(retrievedTrade).isNotNull()
                 .hasFieldOrPropertyWithValue("stock", "GOOGL")
                 .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
