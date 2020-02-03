@@ -54,9 +54,8 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
      * */
 
     //equivalent to CONTAINS x (application time)
-    //TODO: logic needs refining as per above links
-    @Query(value = "select * from #{#entityName} t where t.valid_time_start <= ?1 and t.valid_time_end > ?1", nativeQuery = true)
-    List<T> findAllContainsValidTime(LocalDate validTime);
+    @Query(value = "select * from #{#entityName} t where t.valid_time_start >= ?1 and t.valid_time_end <= ?2", nativeQuery = true)
+    List<T> findAllContainsValidTime(LocalDate validTimeStart, LocalDate validTimeEnd);
 
     //equivalent to OVERLAPS x and y (exclusive / exclusive)
     //TODO: logic needs updating as per above logic

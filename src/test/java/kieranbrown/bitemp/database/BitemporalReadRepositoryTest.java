@@ -404,15 +404,18 @@ class BitemporalReadRepositoryTest {
 
         @Test
         void canRetrievesTradesContainingValidTime() {
-            final LocalDate validTime = LocalDate.of(2020, 1, 15);
+            final LocalDate validTimeStart = LocalDate.of(2020, 1, 15);
+            final LocalDate validTimeEnd = LocalDate.of(2020, 1, 17);
             final Trade trade1 = new Trade();
             final Trade trade2 = new Trade();
             final Trade trade3 = new Trade();
             final Trade trade4 = new Trade();
+            final Trade trade5 = new Trade();
             final BitemporalKey key1 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
             final BitemporalKey key2 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(201).build();
             final BitemporalKey key3 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
             final BitemporalKey key4 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(202).build();
+            final BitemporalKey key5 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(203).build();
 
             trade1.setTradeKey(key1)
                     .setStock("GOOGL")
@@ -422,8 +425,8 @@ class BitemporalReadRepositoryTest {
                     .setVolume(200)
                     .setSystemTimeStart(new Date(2020, 1, 15, 3, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 15, 10, 30, 0))
-                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 15));
+                    .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
             trade2.setTradeKey(key2)
                     .setStock("AAPL")
@@ -433,8 +436,8 @@ class BitemporalReadRepositoryTest {
                     .setVolume(195)
                     .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                    .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 15));
+                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
             trade3.setTradeKey(key3)
                     .setStock("MSFT")
@@ -444,8 +447,8 @@ class BitemporalReadRepositoryTest {
                     .setVolume(199)
                     .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
-                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 19));
+                    .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
             trade4.setTradeKey(key4)
                     .setStock("EBAY")
@@ -455,15 +458,50 @@ class BitemporalReadRepositoryTest {
                     .setVolume(110)
                     .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 12, 3, 30, 0))
-                    .setValidTimeStart(LocalDate.of(2020, 1, 13))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 19));
+                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
-            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
+            trade5.setTradeKey(key5)
+                    .setStock("NVDA")
+                    .setBuySellFlag('B')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("178.345"))
+                    .setVolume(110)
+                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 12, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
-            final List<Trade> trades = repository.findAllContainsValidTime(validTime);
-            assertThat(trades).isNotNull().hasSize(2);
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4, trade5));
+
+            final List<Trade> trades = repository.findAllContainsValidTime(validTimeStart, validTimeEnd);
+            assertThat(trades).isNotNull().hasSize(4);
 
             assertThat(trades.get(0)).isNotNull()
+                    .hasFieldOrPropertyWithValue("stock", "GOOGL")
+                    .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
+                    .hasFieldOrPropertyWithValue("buySellFlag", 'B')
+                    .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
+                    .hasFieldOrPropertyWithValue("volume", 200)
+                    .hasFieldOrPropertyWithValue("tradeKey", key1)
+                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 15, 3, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 10, 30, 0))
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+            assertThat(trades.get(1)).isNotNull()
+                    .hasFieldOrPropertyWithValue("stock", "AAPL")
+                    .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
+                    .hasFieldOrPropertyWithValue("buySellFlag", 'B')
+                    .hasFieldOrPropertyWithValue("price", new BigDecimal("189.213"))
+                    .hasFieldOrPropertyWithValue("volume", 195)
+                    .hasFieldOrPropertyWithValue("tradeKey", key2)
+                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 9, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+            assertThat(trades.get(2)).isNotNull()
                     .hasFieldOrPropertyWithValue("stock", "MSFT")
                     .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
                     .hasFieldOrPropertyWithValue("buySellFlag", 'S')
@@ -472,10 +510,10 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("tradeKey", key3)
                     .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
                     .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
-                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
-                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 19));
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
 
-            assertThat(trades.get(1)).isNotNull()
+            assertThat(trades.get(3)).isNotNull()
                     .hasFieldOrPropertyWithValue("stock", "EBAY")
                     .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
                     .hasFieldOrPropertyWithValue("buySellFlag", 'B')
@@ -484,8 +522,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("tradeKey", key4)
                     .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
                     .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 12, 3, 30, 0))
-                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 13))
-                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 19));
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
 
         }
 
