@@ -27,7 +27,7 @@ class BitemporalReadRepositoryTest {
         private TradeReadRepository repository;
 
         @Autowired
-        private BitemporalWriteRepository writeRepository;
+        private TradeWriteRepository writeRepository;
 
         @Test
         void canRetrieveObject() {
@@ -136,7 +136,7 @@ class BitemporalReadRepositoryTest {
         private TradeReadRepository repository;
 
         @Autowired
-        private BitemporalWriteRepository writeRepository;
+        private TradeWriteRepository writeRepository;
 
         @Test
         void canRetrieveMostRecentRowForGivenTradeUsingUUID() {
@@ -400,7 +400,7 @@ class BitemporalReadRepositoryTest {
         private TradeReadRepository repository;
 
         @Autowired
-        private BitemporalWriteRepository writeRepository;
+        private TradeWriteRepository writeRepository;
 
         @Test
         void canRetrievesTradesContainingValidTime() {
@@ -1116,6 +1116,6 @@ class BitemporalReadRepositoryTest {
         private TradeReadRepository repository;
 
         @Autowired
-        private BitemporalWriteRepository writeRepository;
+        private TradeWriteRepository writeRepository;
     }
 }

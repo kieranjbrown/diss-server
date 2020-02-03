@@ -1,10 +1,15 @@
 package kieranbrown.bitemp.database;
 
 import kieranbrown.bitemp.models.BitemporalKey;
-import kieranbrown.bitemp.models.Trade;
-import org.springframework.data.jpa.repository.JpaRepository;
+import kieranbrown.bitemp.models.BitemporalModel;
+import org.springframework.data.repository.Repository;
 
-//TODO: change this to not be a full JPA repository
-public interface BitemporalWriteRepository extends JpaRepository<Trade, BitemporalKey> {
+import java.util.List;
 
+public interface BitemporalWriteRepository<T extends BitemporalModel<T>> extends Repository<T, BitemporalKey> {
+    void save(T t);
+
+    default void saveAll(List<T> t) {
+        t.forEach(this::save);
+    }
 }
