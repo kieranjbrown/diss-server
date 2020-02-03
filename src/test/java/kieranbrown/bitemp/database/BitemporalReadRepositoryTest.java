@@ -17,7 +17,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TradeReadRepositoryTest {
+class BitemporalReadRepositoryTest {
 
     @SpringJUnitConfig
     @DataJpaTest
@@ -26,12 +26,18 @@ class TradeReadRepositoryTest {
         @Autowired
         private TradeReadRepository repository;
 
+        @Autowired
+        private BitemporalWriteRepository writeRepository;
+
         @Test
-        void canPersistBitemporalModel() {
-            final Trade trade = new Trade();
+        void canRetrieveObject() {
+            final Trade trade1 = new Trade();
+            final Trade trade2 = new Trade();
             final Date now = new Date();
-            final BitemporalKey key = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
-            trade.setTradeKey(key)
+            final UUID id = UUID.randomUUID();
+            final BitemporalKey key1 = new BitemporalKey.Builder().setTradeId(id).setVersion(200).build();
+            final BitemporalKey key2 = new BitemporalKey.Builder().setTradeId(id).setVersion(201).build();
+            trade1.setTradeKey(key1)
                     .setStock("GOOGL")
                     .setBuySellFlag('B')
                     .setMarketLimitFlag('M')
@@ -39,16 +45,24 @@ class TradeReadRepositoryTest {
                     .setVolume(200)
                     .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
-            repository.save(trade);
+            trade2.setTradeKey(key2)
+                    .setStock("GOOGL")
+                    .setBuySellFlag('B')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("142.171"))
+                    .setVolume(200)
+                    .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
-            final Trade retrievedTrade = repository.getOne(key);
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2));
+
+            final Trade retrievedTrade = repository.getOne(key1);
             assertThat(retrievedTrade).isNotNull()
                     .hasFieldOrPropertyWithValue("stock", "GOOGL")
                     .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
                     .hasFieldOrPropertyWithValue("buySellFlag", 'B')
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("140.171"))
                     .hasFieldOrPropertyWithValue("volume", 200)
-                    .hasFieldOrPropertyWithValue("tradeKey", key)
+                    .hasFieldOrPropertyWithValue("tradeKey", key1)
                     .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
@@ -83,8 +97,8 @@ class TradeReadRepositoryTest {
                     .setSystemTimeStart(new Date(2009, 10, 10, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
-            repository.save(trade1);
-            repository.save(trade2);
+            writeRepository.save(trade1);
+            writeRepository.save(trade2);
             System.out.println();
             final List<Trade> retrievedTrades = repository.findAllById(tradeId);
 
@@ -121,6 +135,9 @@ class TradeReadRepositoryTest {
         @Autowired
         private TradeReadRepository repository;
 
+        @Autowired
+        private BitemporalWriteRepository writeRepository;
+
         @Test
         void canRetrieveMostRecentRowForGivenTradeUsingUUID() {
             final Trade trade1 = new Trade();
@@ -147,8 +164,8 @@ class TradeReadRepositoryTest {
                     .setSystemTimeStart(new Date(2009, 10, 10, 10, 30, 0))
                     .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
-            repository.save(trade1);
-            repository.save(trade2);
+            writeRepository.save(trade1);
+            writeRepository.save(trade2);
             System.out.println();
             final Trade retrievedTrade = repository.findMostRecentBySystemTime(tradeId);
             assertThat(retrievedTrade).isNotNull()
@@ -208,7 +225,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
             final List<Trade> trades = repository.findAllBetweenSystemTimeRange(startRange, endRange);
             assertThat(trades).isNotNull().hasSize(1);
@@ -282,7 +299,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
             final List<Trade> trades = repository.findAllAsOfSystemTime(systemTime);
             assertThat(trades).isNotNull().hasSize(2);
@@ -356,7 +373,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
             final List<Trade> trades = repository.findAllFromSystemTimeRange(startTime, endTime);
             assertThat(trades).isNotNull().hasSize(1);
@@ -381,6 +398,9 @@ class TradeReadRepositoryTest {
     class ValidTimeTests {
         @Autowired
         private TradeReadRepository repository;
+
+        @Autowired
+        private BitemporalWriteRepository writeRepository;
 
         @Test
         void canRetrievesTradesContainingValidTime() {
@@ -438,7 +458,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
 
             final List<Trade> trades = repository.findAllContainsValidTime(validTime);
             assertThat(trades).isNotNull().hasSize(2);
@@ -513,7 +533,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
             final List<Trade> trades = repository.findAllOverlappingValidTimeRange(startDate, endDate);
             assertThat(trades).isNotNull().hasSize(1);
@@ -576,7 +596,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
             final List<Trade> trades = repository.findAllWhereValidTimeIsEqual(startDate, endDate);
             assertThat(trades).isNotNull().hasSize(1);
@@ -652,7 +672,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 11))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
 
             final List<Trade> trades = repository.findAllWhereValidTimeIsPreceded(startDate, endDate);
             assertThat(trades).isNotNull().hasSize(2);
@@ -740,7 +760,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 11))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
 
             final List<Trade> trades = repository.findAllWhereValidTimeIsImmediatelyPreceded(startDate, endDate);
             assertThat(trades).isNotNull().hasSize(1);
@@ -815,7 +835,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
 
             final List<Trade> trades = repository.findAllWhereValidTimeIsSucceeded(endDate);
             assertThat(trades).isNotNull().hasSize(2);
@@ -902,7 +922,7 @@ class TradeReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
-            repository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
+            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4));
 
             final List<Trade> trades = repository.findAllWhereValidTimeIsImmediatelySucceeded(endDate);
             assertThat(trades).isNotNull().hasSize(1);
@@ -927,5 +947,8 @@ class TradeReadRepositoryTest {
     class BitemporalTests {
         @Autowired
         private TradeReadRepository repository;
+
+        @Autowired
+        private BitemporalWriteRepository writeRepository;
     }
 }
