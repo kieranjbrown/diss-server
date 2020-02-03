@@ -18,7 +18,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 //Note: this is called BitemporalReadRepositoryTest but test the Trade repo, as cannot test on an abstract class
-
 class BitemporalReadRepositoryTest {
 
     @SpringJUnitConfig

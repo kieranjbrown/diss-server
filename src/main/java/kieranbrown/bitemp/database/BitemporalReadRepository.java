@@ -11,7 +11,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-//TODO: split these into read, write etc repos then have a service combining them to handle all ops?
 @NoRepositoryBean
 public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends Repository<T, BitemporalKey> {
     @Query(value = "select * from #{#entityName} t where t.id = ?1 order by version asc", nativeQuery = true)
