@@ -53,14 +53,14 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
      * http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2014/Neuere_Entwicklungen/Chapter_10_-_Temporal_DM.pdf
      * */
 
-    //equivalent to CONTAINS x (application time)
+    //equivalent to CONTAINS x
     @Query(value = "select * from #{#entityName} t where t.valid_time_start >= ?1 and t.valid_time_end <= ?2", nativeQuery = true)
-    List<T> findAllContainsValidTime(LocalDate validTimeStart, LocalDate validTimeEnd);
+    List<T> findAllContainingValidTime(LocalDate validTimeStart, LocalDate validTimeEnd);
 
-    //equivalent to OVERLAPS x and y (exclusive / exclusive)
-    //TODO: logic needs updating as per above logic
-    @Query(value = "select * from #{#entityName} t where t.valid_time_start < ?1 and t.valid_time_end > ?2", nativeQuery = true)
-    List<T> findAllOverlappingValidTimeRange(LocalDate startDate, LocalDate endDate);
+    //equivalent to x overlaps y
+    //TODO: can this be refined
+    @Query(value = "select * from #{#entityName} t where (t.valid_time_start >= ?1 and t.valid_time_end <= ?2) or (t.valid_time_start >= ?1 and t.valid_time_start < ?2 and t.valid_time_end > ?2) or (t.valid_time_start <= ?1 and t.valid_time_end >= ?2) or (t.valid_time_start <= ?1 and t.valid_time_end >= ?1 and t.valid_time_end < ?2)", nativeQuery = true)
+    List<T> findAllOverlappingValidTime(LocalDate startDate, LocalDate endDate);
 
     //equivalent to x equals y
     @Query(value = "select * from #{#entityName} t where t.valid_time_start = ?1 and t.valid_time_end = ?2", nativeQuery = true)
@@ -86,4 +86,6 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
      * BITEMPORAL METHODS
      * these are a combination of each of the above methods for filtering on both dimensions
      * */
+
+    //TODO: PIECEWISE COMBINATIONS OF THE ABOVE?
 }

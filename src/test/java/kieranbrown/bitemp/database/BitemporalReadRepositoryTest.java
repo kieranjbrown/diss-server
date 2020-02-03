@@ -417,6 +417,7 @@ class BitemporalReadRepositoryTest {
             final BitemporalKey key4 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(202).build();
             final BitemporalKey key5 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(203).build();
 
+            //x contains y
             trade1.setTradeKey(key1)
                     .setStock("GOOGL")
                     .setBuySellFlag('B')
@@ -428,6 +429,7 @@ class BitemporalReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
+            //x starts y
             trade2.setTradeKey(key2)
                     .setStock("AAPL")
                     .setBuySellFlag('B')
@@ -439,6 +441,7 @@ class BitemporalReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
+            //x finishes y
             trade3.setTradeKey(key3)
                     .setStock("MSFT")
                     .setBuySellFlag('S')
@@ -450,6 +453,7 @@ class BitemporalReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
+            //x equals y
             trade4.setTradeKey(key4)
                     .setStock("EBAY")
                     .setBuySellFlag('B')
@@ -474,7 +478,7 @@ class BitemporalReadRepositoryTest {
 
             writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3, trade4, trade5));
 
-            final List<Trade> trades = repository.findAllContainsValidTime(validTimeStart, validTimeEnd);
+            final List<Trade> trades = repository.findAllContainingValidTime(validTimeStart, validTimeEnd);
             assertThat(trades).isNotNull().hasSize(4);
 
             assertThat(trades.get(0)).isNotNull()
@@ -530,14 +534,29 @@ class BitemporalReadRepositoryTest {
         @Test
         void canRetrieveTradesOverlappingValidTimeRange() {
             final LocalDate startDate = LocalDate.of(2020, 1, 15);
-            final LocalDate endDate = LocalDate.of(2020, 1, 20);
+            final LocalDate endDate = LocalDate.of(2020, 1, 17);
             final Trade trade1 = new Trade();
             final Trade trade2 = new Trade();
             final Trade trade3 = new Trade();
+            final Trade trade4 = new Trade();
+            final Trade trade5 = new Trade();
+            final Trade trade6 = new Trade();
+            final Trade trade7 = new Trade();
+            final Trade trade8 = new Trade();
+            final Trade trade9 = new Trade();
+            final Trade trade10 = new Trade();
             final BitemporalKey key1 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
             final BitemporalKey key2 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(201).build();
             final BitemporalKey key3 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key4 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key5 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key6 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key7 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key8 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key9 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+            final BitemporalKey key10 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
 
+            //x overlaps y
             trade1.setTradeKey(key1)
                     .setStock("GOOGL")
                     .setBuySellFlag('B')
@@ -546,9 +565,10 @@ class BitemporalReadRepositoryTest {
                     .setVolume(200)
                     .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                    .setValidTimeStart(LocalDate.of(2020, 1, 16))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 21));
+                    .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
+            //y overlaps x
             trade2.setTradeKey(key2)
                     .setStock("AAPL")
                     .setBuySellFlag('B')
@@ -557,9 +577,10 @@ class BitemporalReadRepositoryTest {
                     .setVolume(195)
                     .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
-                    .setValidTimeStart(LocalDate.of(2020, 1, 14))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 21));
+                    .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
+            //y contains x
             trade3.setTradeKey(key3)
                     .setStock("MSFT")
                     .setBuySellFlag('S')
@@ -568,25 +589,133 @@ class BitemporalReadRepositoryTest {
                     .setVolume(199)
                     .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
                     .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 16));
+
+            //x contains y
+            trade4.setTradeKey(key4)
+                    .setStock("NVDA")
+                    .setBuySellFlag('B')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 19));
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
-            writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
+            //x starts y
+            trade5.setTradeKey(key5)
+                    .setStock("EBAY")
+                    .setBuySellFlag('S')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
-            final List<Trade> trades = repository.findAllOverlappingValidTimeRange(startDate, endDate);
-            assertThat(trades).isNotNull().hasSize(1);
+            //x finishes y
+            trade6.setTradeKey(key6)
+                    .setStock("FB")
+                    .setBuySellFlag('S')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 17));
+
+            //y starts x
+            trade7.setTradeKey(key7)
+                    .setStock("AMD")
+                    .setBuySellFlag('S')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 16));
+
+            //y finishes x
+            trade8.setTradeKey(key8)
+                    .setStock("GSK")
+                    .setBuySellFlag('S')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 17));
+
+            //x equals y
+            trade9.setTradeKey(key9)
+                    .setStock("AMZN")
+                    .setBuySellFlag('S')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 17));
+
+            trade10.setTradeKey(key10)
+                    .setStock("TSLA")
+                    .setBuySellFlag('S')
+                    .setMarketLimitFlag('M')
+                    .setPrice(new BigDecimal("78.345"))
+                    .setVolume(199)
+                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setValidTimeStart(LocalDate.of(2020, 1, 11))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 12));
+
+            writeRepository.saveAll(
+                    ImmutableList.of(trade1, trade2, trade3, trade4, trade5, trade6, trade7, trade8, trade9, trade10));
+
+            final List<Trade> trades = repository.findAllOverlappingValidTime(startDate, endDate);
+            assertThat(trades).isNotNull().hasSize(9);
 
             assertThat(trades.get(0)).isNotNull()
-                    .hasFieldOrPropertyWithValue("stock", "AAPL")
-                    .hasFieldOrPropertyWithValue("marketLimitFlag", 'M')
-                    .hasFieldOrPropertyWithValue("buySellFlag", 'B')
-                    .hasFieldOrPropertyWithValue("price", new BigDecimal("189.213"))
-                    .hasFieldOrPropertyWithValue("volume", 195)
-                    .hasFieldOrPropertyWithValue("tradeKey", key2)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 9, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
-                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 21));
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+            assertThat(trades.get(1)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
+
+            assertThat(trades.get(2)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+            assertThat(trades.get(3)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
+
+            assertThat(trades.get(4)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
+
+            assertThat(trades.get(5)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
+
+            assertThat(trades.get(6)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+            assertThat(trades.get(7)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
+
+            assertThat(trades.get(8)).isNotNull()
+                    .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
+                    .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
         }
 
         @Test
