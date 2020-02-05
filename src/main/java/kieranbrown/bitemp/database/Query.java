@@ -86,6 +86,7 @@ class Query<T extends BitemporalModel<T>> {
     }
 
     private String getFilters() {
+        //TODO: need to change dates to SQL friendly format
         return filters.length() > 0
                 ? filters.foldLeft(" where", (x, y) -> x + " " + y._1 + " " + y._2.getValue() + " " + y._3)
                 : "";

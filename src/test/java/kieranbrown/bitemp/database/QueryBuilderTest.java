@@ -7,6 +7,7 @@ import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -19,130 +20,193 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
+import static kieranbrown.bitemp.database.QueryBuilder.select;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringJUnitConfig
-@DataJpaTest
 class QueryBuilderTest {
 
-    @Autowired
-    private TradeWriteRepository repository;
+    @SpringJUnitConfig
+    @DataJpaTest
+    @Nested
+    class SelectQueries {
+        private final BitemporalKey KEY = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+        @Autowired
+        private TradeWriteRepository repository;
+        @PersistenceContext
+        private EntityManager entityManager;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+        @Test
+        void canCreateQueryForDistinctResult() {
+            assertThat(QueryBuilder.selectDistinct(Trade.class)).isNotNull()
+                    .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT_DISTINCT, Trade.class))
+                    .hasFieldOrPropertyWithValue("queryClass", Trade.class);
+        }
 
-    private static final BitemporalKey KEY = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
+        @Test
+        void canCreateQueryForMultipleResults() {
+            assertThat(select(Trade.class)).isNotNull()
+                    .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT, Trade.class))
+                    .hasFieldOrPropertyWithValue("queryClass", Trade.class);
+        }
 
-    @Test
-    void canCreateQueryForDistinctResult() {
-        assertThat(QueryBuilder.selectDistinct(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT_DISTINCT, Trade.class))
-                .hasFieldOrPropertyWithValue("queryClass", Trade.class);
-    }
+        @Test
+        void allFieldsSetsAllFieldsFromTheSourceObject() {
+            final Map<String, Object> fields = HashMap.ofEntries(
+                    new Tuple2<>("id", null),
+                    new Tuple2<>("version", null),
+                    new Tuple2<>("valid_time_start", null),
+                    new Tuple2<>("valid_time_end", null),
+                    new Tuple2<>("system_time_start", null),
+                    new Tuple2<>("system_time_end", null),
+                    new Tuple2<>("stock", null),
+                    new Tuple2<>("price", null),
+                    new Tuple2<>("volume", null),
+                    new Tuple2<>("buy_sell_flag", null),
+                    new Tuple2<>("market_limit_flag", null)
+            );
 
-    @Test
-    void canCreateQueryForMultipleResults() {
-        assertThat(QueryBuilder.select(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT, Trade.class))
-                .hasFieldOrPropertyWithValue("queryClass", Trade.class);
-    }
+            System.out.println("test fields");
+            fields.keySet().forEach(System.out::println);
 
-    @Test
-    void allFieldsSetsAllFieldsFromTheSourceObject() {
-        final Map<String, Object> fields = HashMap.ofEntries(
-                new Tuple2<>("id", null),
-                new Tuple2<>("version", null),
-                new Tuple2<>("valid_time_start", null),
-                new Tuple2<>("valid_time_end", null),
-                new Tuple2<>("system_time_start", null),
-                new Tuple2<>("system_time_end", null),
-                new Tuple2<>("stock", null),
-                new Tuple2<>("price", null),
-                new Tuple2<>("volume", null),
-                new Tuple2<>("buy_sell_flag", null),
-                new Tuple2<>("market_limit_flag", null)
-        );
+            final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
+            queryBuilder.execute(entityManager);
 
-        System.out.println("test fields");
-        fields.keySet().forEach(System.out::println);
+            assertThat(queryBuilder).isNotNull()
+                    .extracting("query")
+                    .extracting("fields")
+                    .isEqualTo(fields);
+        }
 
-        final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
-        queryBuilder.execute(entityManager);
+        @Test
+        void canEvaluateSingleSelectQueryWithAllFieldsAndReturnResult() {
+            final Trade trade = new Trade().setTradeKey(KEY)
+                    .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                    .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                    .setVolume(200)
+                    .setPrice(new BigDecimal("123.45"))
+                    .setMarketLimitFlag('M')
+                    .setBuySellFlag('B')
+                    .setStock("GOOGL");
 
-        assertThat(queryBuilder).isNotNull()
-                .extracting("query")
-                .extracting("fields")
-                .isEqualTo(fields);
-    }
+            repository.save(trade);
+            final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
+            queryBuilder.execute(entityManager);
+            final List results = queryBuilder.getResults();
+            assertThat(results).isNotNull()
+                    .isNotEmpty();
 
-    @Test
-    void canEvaluateSingleSelectQueryWithAllFieldsAndReturnResult() {
-        final Trade trade = new Trade().setTradeKey(KEY)
-                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("GOOGL");
+            assertThat(results.get(0)).usingRecursiveComparison().isEqualTo(trade);
 
-        repository.save(trade);
-        final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
-        queryBuilder.execute(entityManager);
-        final List results = queryBuilder.getResults();
-        assertThat(results).isNotNull()
-                .isNotEmpty();
+            //TODO: finish
+        }
 
-        assertThat(results.get(0)).usingRecursiveComparison().isEqualTo(trade);
+        @Test
+        void throwsForNullEntityManager() {
+            assertThat(assertThrows(NullPointerException.class, () -> select(Trade.class).execute(null)))
+                    .hasMessage("entityManager cannot be null");
+        }
 
-        //TODO: finish
-    }
+        @Test
+        void throwsIfResultsAreRetrievedBeforeCodeIsExecuted() {
+            assertThat(assertThrows(IllegalStateException.class, () -> select(Trade.class).getResults()))
+                    .hasMessage("call to getResults before executing query");
+        }
 
-    @Test
-    void throwsForNullEntityManager() {
-        assertThat(assertThrows(NullPointerException.class, () -> QueryBuilder.select(Trade.class).execute(null)))
-                .hasMessage("entityManager cannot be null");
-    }
+        @Test
+        void settingFilterAffectsQuery() {
+            repository.saveAll(ImmutableList.of(
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL")
+            ));
 
-    @Test
-    void throwsIfResultsAreRetrievedBeforeCodeIsExecuted() {
-        assertThat(assertThrows(IllegalStateException.class, () -> QueryBuilder.select(Trade.class).getResults()))
-                .hasMessage("call to getResults before executing query");
-    }
+            final QueryBuilder<Trade> query = select(Trade.class);
+            query.where("version", QueryEquality.EQUALS, 3);
+            query.execute(entityManager);
+            final List<Trade> results = query.getResults();
 
-    @Test
-    void settingFilterAffectsQuery() {
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
-                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                        .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
-                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                        .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+            assertThat(results).isNotNull().hasSize(1);
+        }
 
-        final QueryBuilder<Trade> query = QueryBuilder.select(Trade.class);
-        query.addFilter("version", QueryEquality.EQUALS, 3);
-        query.execute(entityManager);
-        final List<Trade> results = query.getResults();
+        @Test
+        void betweenSystemTimeFilterAffectsResults() {
+            final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
+            final Date endRange = new Date(2020, 1, 20, 0, 0, 0);
 
-        assertThat(results).isNotNull().hasSize(1);
+            repository.saveAll(ImmutableList.of(
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(2020, 1, 10, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(2020, 1, 11, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(2020, 1, 12, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(2020, 1, 13, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(2020, 1, 20, 0, 0, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL")
+            ));
+
+            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
+            final List<Trade> results = queryBuilder.allFields()
+                    .betweenSystemTime(startRange, endRange)
+                    .execute(entityManager)
+                    .getResults();
+
+            assertThat(results).isNotNull().hasSize(3);
+            results.forEach(x -> {
+                assertThat(x.getSystemTimeStart()).isAfterOrEqualTo(startRange);
+                assertThat(x.getSystemTimeEnd()).isBeforeOrEqualTo(endRange);
+            });
+        }
     }
 }

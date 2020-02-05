@@ -11,8 +11,11 @@ import kieranbrown.bitemp.models.BitemporalModel;
 import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.util.Date;
 
 import static java.util.Objects.requireNonNull;
+import static kieranbrown.bitemp.database.QueryEquality.GREATER_THAN_EQUAL_TO;
+import static kieranbrown.bitemp.database.QueryEquality.LESS_THAN_EQUAL_TO;
 
 public class QueryBuilder<T extends BitemporalModel<T>> {
     private final Query<T> query;
@@ -48,7 +51,9 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     //TODO: other types of queries
 
-    public QueryBuilder allFields() {
+    //TODO: is there any point to this when Query can handle it
+    //TODO: individual fields
+    public QueryBuilder<T> allFields() {
         fields = Stream.of(queryClass.getDeclaredFields())
                 .map(this::getName)
                 .insertAll(0, baseFields)
@@ -57,8 +62,17 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder addFilter(final String column, final QueryEquality equality, final Object value) {
+    public QueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
         filters = filters.append(new Tuple3<>(column, equality, value));
+        return this;
+    }
+
+    public QueryBuilder<T> betweenSystemTime(final Date startTime, final Date endTime) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
+                        new Tuple3<>("system_time_end", LESS_THAN_EQUAL_TO, endTime))
+        );
         return this;
     }
 
@@ -67,13 +81,12 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return "".equals(annotationName) ? field.getName() : annotationName;
     }
 
-    public void execute(final EntityManager entityManager) {
+    public QueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFields(HashMap.ofEntries(fields));
         query.setFilters(filters);
-        final String sql = query.build();
-        System.out.println(sql);
-        results = Option.of(List.ofAll(entityManager.createNativeQuery(sql, queryClass).getResultList()));
+        results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
+        return this;
     }
 
     public List<T> getResults() {
