@@ -15,6 +15,7 @@ class Query<T extends BitemporalModel<T>> {
     private final QueryType queryType;
     private final Class<T> queryClass;
     private Map<String, Object> fields;
+    private int limit = -1;
 
     public Query(final QueryType queryType, final Class<T> clazz) {
         this.queryType = requireNonNull(queryType, "queryType cannot be null");
@@ -44,6 +45,13 @@ class Query<T extends BitemporalModel<T>> {
         this.fields = requireNonNull(fields, "fields cannot be null");
     }
 
+    /*
+     * -1 sets no limit
+     */
+    public void setLimit(final int limit) {
+        this.limit = limit;
+    }
+
     public String build() {
         return Match(queryType).of(
                 Case($(x -> x.equals(SELECT)), buildSelectQuery())
@@ -55,7 +63,8 @@ class Query<T extends BitemporalModel<T>> {
         return "SELECT " +
                 fields.keySet().reduce((x, y) -> x + ", " + y) +
                 " from " +
-                getTableName();
+                getTableName() +
+                (limit == -1 ? "" : " limit " + limit);
     }
 
     private String getTableName() {

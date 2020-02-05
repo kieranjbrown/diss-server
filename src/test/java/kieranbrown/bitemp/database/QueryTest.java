@@ -71,4 +71,38 @@ class QueryTest {
                 "SELECT system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, " +
                         "stock, version, system_time_end, volume, id from reporting.trade_data");
     }
+
+    @Test
+    void settingLimitAffectsQuery() {
+        final Map<String, Object> fields = HashMap.ofEntries(
+                new Tuple2<>("id", null),
+                new Tuple2<>("version", null)
+        );
+
+        final Query query = new Query<>(QueryType.SELECT, Trade.class);
+        query.setFields(fields);
+        query.setLimit(3);
+
+        final String sql = query.build();
+        assertThat(sql).isEqualTo(
+                "SELECT version, id from reporting.trade_data limit 3");
+    }
+
+    @Test
+    void notSettingLimitOrSettingNoLimitDoesNotAffectQuery() {
+        final Map<String, Object> fields = HashMap.ofEntries(
+                new Tuple2<>("id", null),
+                new Tuple2<>("version", null)
+        );
+
+        final Query query = new Query<>(QueryType.SELECT, Trade.class);
+        query.setFields(fields);
+
+        assertThat(query.build()).isEqualTo(
+                "SELECT version, id from reporting.trade_data");
+
+        query.setLimit(-1);
+        assertThat(query.build()).isEqualTo(
+                "SELECT version, id from reporting.trade_data");
+    }
 }
