@@ -9,9 +9,9 @@ import kieranbrown.bitemp.models.BitemporalModel;
 import javax.persistence.Column;
 import java.lang.reflect.Field;
 
-public class QueryBuilder {
-    private final Query query;
-    private final Class<? extends BitemporalModel<?>> queryClass;
+public class QueryBuilder<T extends BitemporalModel<T>> {
+    private final Query<T> query;
+    private final Class<T> queryClass;
 
     private final List<String> baseFields = List.of(
             "id",
@@ -21,17 +21,17 @@ public class QueryBuilder {
             "system_time_start",
             "system_time_end");
 
-    private QueryBuilder(final QueryType queryType, final Class<? extends BitemporalModel<?>> clazz) {
+    private QueryBuilder(final QueryType queryType, final Class<T> clazz) {
         queryClass = clazz;
-        this.query = new Query(queryType, clazz);
+        this.query = new Query<>(queryType, clazz);
     }
 
-    public static QueryBuilder selectOne(final Class<? extends BitemporalModel<?>> clazz) {
-        return new QueryBuilder(QueryType.SELECT_ONE, clazz);
+    public static <S extends BitemporalModel<S>> QueryBuilder<S> selectOne(final Class<S> clazz) {
+        return new QueryBuilder<>(QueryType.SELECT_DISTINCT, clazz);
     }
 
-    public static QueryBuilder selectMultiple(final Class<? extends BitemporalModel<?>> clazz) {
-        return new QueryBuilder(QueryType.SELECT_MANY, clazz);
+    public static <S extends BitemporalModel<S>> QueryBuilder<S> selectMultiple(final Class<S> clazz) {
+        return new QueryBuilder<>(QueryType.SELECT, clazz);
     }
 
     //TODO: other types of queries
@@ -48,5 +48,9 @@ public class QueryBuilder {
     private String getName(final Field field) {
         final String annotationName = field.getAnnotation(Column.class).name();
         return "".equals(annotationName) ? field.getName() : annotationName;
+    }
+
+    public T getResult() {
+        return null;
     }
 }
