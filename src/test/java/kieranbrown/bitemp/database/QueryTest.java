@@ -3,6 +3,7 @@ package kieranbrown.bitemp.database;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
+import io.vavr.control.Option;
 import kieranbrown.bitemp.models.Trade;
 import org.junit.jupiter.api.Test;
 
@@ -44,7 +45,7 @@ class QueryTest {
         final Query query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
         query.setFields(fields);
 
-        assertThat(query).hasFieldOrPropertyWithValue("fields", fields);
+        assertThat(query).hasFieldOrPropertyWithValue("fields", Option.some(fields));
     }
 
     @Test
@@ -104,5 +105,18 @@ class QueryTest {
         query.setLimit(-1);
         assertThat(query.build()).isEqualTo(
                 "SELECT version, id from reporting.trade_data");
+    }
+
+    @Test
+    void notSettingFieldsSelectsAllFields() {
+        final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
+        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data");
+    }
+
+    @Test
+    void settingFilterAddsToQuery() {
+        final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
+        query.addFilter("id", QueryEquality.EQUALS, 3);
+        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3");
     }
 }

@@ -2,6 +2,7 @@ package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
+import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
@@ -10,12 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringJUnitConfig
 @DataJpaTest
@@ -24,20 +28,22 @@ class QueryBuilderTest {
     @Autowired
     private TradeWriteRepository repository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private static final BitemporalKey KEY = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(200).build();
-    private static final QueryBuilder SELECT_ONE_TRADE = QueryBuilder.selectOne(Trade.class);
 
     @Test
-    void canCreateQueryForSingleResult() {
-        assertThat(SELECT_ONE_TRADE).isNotNull()
-                .hasFieldOrPropertyWithValue("query", QueryBuilder.selectOne(Trade.class))
+    void canCreateQueryForDistinctResult() {
+        assertThat(QueryBuilder.selectDistinct(Trade.class)).isNotNull()
+                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT_DISTINCT, Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 
     @Test
     void canCreateQueryForMultipleResults() {
-        assertThat(QueryBuilder.selectMultiple(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new Query(QueryType.SELECT, Trade.class))
+        assertThat(QueryBuilder.select(Trade.class)).isNotNull()
+                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT, Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 
@@ -60,10 +66,8 @@ class QueryBuilderTest {
         System.out.println("test fields");
         fields.keySet().forEach(System.out::println);
 
-        final Query query = new Query(QueryType.SELECT_DISTINCT, Trade.class);
-        query.setFields(fields);
-
-        final QueryBuilder queryBuilder = QueryBuilder.selectOne(Trade.class).allFields();
+        final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
+        queryBuilder.execute(entityManager);
 
         assertThat(queryBuilder).isNotNull()
                 .extracting("query")
@@ -77,7 +81,7 @@ class QueryBuilderTest {
                 .setValidTimeStart(LocalDate.of(2020, 1, 20))
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                 .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                .setSystemTimeStart(new Date(2020, 1, 21, 3, 45, 0))
+                .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
                 .setVolume(200)
                 .setPrice(new BigDecimal("123.45"))
                 .setMarketLimitFlag('M')
@@ -85,7 +89,26 @@ class QueryBuilderTest {
                 .setStock("GOOGL");
 
         repository.save(trade);
+        final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
+        queryBuilder.execute(entityManager);
+        final List results = queryBuilder.getResults();
+        assertThat(results).isNotNull()
+                .isNotEmpty();
 
-        QueryBuilder.selectOne(Trade.class).allFields();
+        assertThat(results.get(0)).usingRecursiveComparison().isEqualTo(trade);
+
+        //TODO: finish
+    }
+
+    @Test
+    void throwsForNullEntityManager() {
+        assertThat(assertThrows(NullPointerException.class, () -> QueryBuilder.select(Trade.class).execute(null)))
+                .hasMessage("entityManager cannot be null");
+    }
+
+    @Test
+    void throwsIfResultsAreRetrievedBeforeCodeIsExecuted() {
+        assertThat(assertThrows(IllegalStateException.class, () -> QueryBuilder.select(Trade.class).getResults()))
+                .hasMessage("call to getResults before executing query");
     }
 }
