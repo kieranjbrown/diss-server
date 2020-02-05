@@ -1,5 +1,6 @@
 package kieranbrown.bitemp.database;
 
+import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
@@ -110,5 +111,38 @@ class QueryBuilderTest {
     void throwsIfResultsAreRetrievedBeforeCodeIsExecuted() {
         assertThat(assertThrows(IllegalStateException.class, () -> QueryBuilder.select(Trade.class).getResults()))
                 .hasMessage("call to getResults before executing query");
+    }
+
+    @Test
+    void settingFilterAffectsQuery() {
+        repository.saveAll(ImmutableList.of(
+                new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                        .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                        .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                        .setVolume(200)
+                        .setPrice(new BigDecimal("123.45"))
+                        .setMarketLimitFlag('M')
+                        .setBuySellFlag('B')
+                        .setStock("GOOGL"),
+                new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                        .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                        .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                        .setVolume(200)
+                        .setPrice(new BigDecimal("123.45"))
+                        .setMarketLimitFlag('M')
+                        .setBuySellFlag('B')
+                        .setStock("GOOGL")
+        ));
+
+        final QueryBuilder<Trade> query = QueryBuilder.select(Trade.class);
+        query.addFilter("version", QueryEquality.EQUALS, 3);
+        query.execute(entityManager);
+        final List<Trade> results = query.getResults();
+
+        assertThat(results).isNotNull().hasSize(1);
     }
 }

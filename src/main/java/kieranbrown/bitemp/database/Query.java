@@ -1,9 +1,9 @@
 package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple3;
+import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
-import io.vavr.control.Option;
 import kieranbrown.bitemp.models.BitemporalModel;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
@@ -18,14 +18,14 @@ class Query<T extends BitemporalModel<T>> {
 
     private final QueryType queryType;
     private final Class<T> queryClass;
-    private Option<Map<String, Object>> fields;
+    private Map<String, Object> fields;
     private List<Tuple3<String, QueryEquality, Object>> filters;
     private int limit = -1;
 
     public Query(final QueryType queryType, final Class<T> clazz) {
         this.queryType = requireNonNull(queryType, "queryType cannot be null");
         queryClass = requireNonNull(clazz, "class cannot be null");
-        fields = Option.none();
+        fields = HashMap.empty();
         filters = List.empty();
     }
 
@@ -44,8 +44,8 @@ class Query<T extends BitemporalModel<T>> {
                 .isEquals();
     }
 
-    public void setFields(final Map<String, Object> fields) {
-        this.fields = Option.of(requireNonNull(fields, "fields cannot be null"));
+    public void setFilters(final List<Tuple3<String, QueryEquality, Object>> filters) {
+        this.filters = filters;
     }
 
     /*
@@ -55,8 +55,14 @@ class Query<T extends BitemporalModel<T>> {
         this.limit = limit;
     }
 
-    public void addFilter(final String column, final QueryEquality equality, final Object value) {
-        filters = filters.append(new Tuple3<>(column, equality, value));
+    //TODO: figure out how to make this all prepared without a connection?
+    private String buildSelectQuery() {
+        return "SELECT " +
+                getFields() +
+                " from " +
+                getTableName() +
+                getFilters() +
+                getLimit();
     }
 
     public String build() {
@@ -65,14 +71,18 @@ class Query<T extends BitemporalModel<T>> {
         );
     }
 
-    //TODO: figure out how to make this all prepared without a connection?
-    private String buildSelectQuery() {
-        return "SELECT " +
-                fields.map(z -> z.keySet().reduce((x, y) -> x + ", " + y)).getOrElse("*") +
-                " from " +
-                getTableName() +
-                getFilters() +
-                (limit == -1 ? "" : " limit " + limit);
+    private Object getFields() {
+        return fields.length() > 0
+                ? fields.keySet().reduce((x, y) -> x + ", " + y)
+                : "*";
+    }
+
+    public void setFields(final Map<String, Object> fields) {
+        this.fields = requireNonNull(fields, "fields cannot be null");
+    }
+
+    private String getTableName() {
+        return queryClass.getAnnotation(Entity.class).name();
     }
 
     private String getFilters() {
@@ -81,7 +91,7 @@ class Query<T extends BitemporalModel<T>> {
                 : "";
     }
 
-    private String getTableName() {
-        return queryClass.getAnnotation(Entity.class).name();
+    private String getLimit() {
+        return limit == -1 ? "" : " limit " + limit;
     }
 }

@@ -7,7 +7,7 @@ public enum QueryEquality {
 
     private String value;
 
-    private QueryEquality(final String value) {
+    QueryEquality(final String value) {
         this.value = value;
     }
 
