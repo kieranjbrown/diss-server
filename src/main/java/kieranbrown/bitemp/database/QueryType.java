@@ -1,8 +1,8 @@
 package kieranbrown.bitemp.database;
 
 public enum QueryType {
-    SELECT_ONE,
-    SELECT_MANY,
+    SELECT_DISTINCT,
+    SELECT,
     INSERT,
     UPDATE,
     DELETE
