@@ -66,7 +66,13 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> betweenSystemTime(final Date startTime, final Date endTime) {
+    /*
+     * SYSTEM TIME METHODS
+     * These methods are implemented in accordance with the SQL:2011 specification, discussed at
+     * http://cs.unibo.it/~montesi/CBD/Articoli/Temporal%20features%20in%20SQL2011.pdf
+     */
+
+    public QueryBuilder<T> between(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
@@ -75,7 +81,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> asOfSystemTime(final Date time) {
+    public QueryBuilder<T> asOf(final Date time) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time),
@@ -85,7 +91,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> fromSystemTime(final Date startTime, final Date endTime) {
+    public QueryBuilder<T> from(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
@@ -94,6 +100,16 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         );
         return this;
     }
+
+    /*
+     * VALID TIME METHODS
+     * These methods are implemented in accordance with the SQL:2011 specification, discussed at
+     * http://cs.unibo.it/~montesi/CBD/Articoli/Temporal%20features%20in%20SQL2011.pdf and explained further at
+     * https://docs.sqlstream.com/sql-reference-guide/temporal-predicates/ and
+     * http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2014/Neuere_Entwicklungen/Chapter_10_-_Temporal_DM.pdf
+     * */
+
+
 
     private String getName(final Field field) {
         final String annotationName = field.getAnnotation(Column.class).name();

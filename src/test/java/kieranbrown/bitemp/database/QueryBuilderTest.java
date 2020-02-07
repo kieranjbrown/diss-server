@@ -200,7 +200,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .betweenSystemTime(startRange, endRange)
+                    .between(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
 
@@ -261,7 +261,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .fromSystemTime(startRange, endRange)
+                    .from(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
 
@@ -321,7 +321,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .asOfSystemTime(time)
+                    .asOf(time)
                     .execute(entityManager)
                     .getResults();
 

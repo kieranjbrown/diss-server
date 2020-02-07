@@ -80,11 +80,4 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
     //equivalent to x immediately succeeds y
     @Query(value = "select * from #{#entityName} t where t.valid_time_start = ?1", nativeQuery = true)
     List<T> findAllWhereValidTimeIsImmediatelySucceeded(LocalDate endDate);
-
-    /*
-     * BITEMPORAL METHODS
-     * these are a combination of each of the above methods for filtering on both dimensions
-     * */
-
-    //TODO: PIECEWISE COMBINATIONS OF THE ABOVE?
 }
