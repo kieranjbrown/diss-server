@@ -85,6 +85,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFields(HashMap.ofEntries(fields));
         query.setFilters(filters);
+        System.out.println(query.build());
         results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
         return this;
     }

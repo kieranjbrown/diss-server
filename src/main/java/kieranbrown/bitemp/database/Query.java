@@ -5,9 +5,13 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import kieranbrown.bitemp.models.BitemporalModel;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import javax.persistence.Entity;
+
+import java.time.LocalDate;
+import java.util.Date;
 
 import static io.vavr.API.*;
 import static java.util.Objects.requireNonNull;
@@ -86,10 +90,30 @@ class Query<T extends BitemporalModel<T>> {
     }
 
     private String getFilters() {
-        //TODO: need to change dates to SQL friendly format
         return filters.length() > 0
-                ? filters.foldLeft(" where", (x, y) -> x + " " + y._1 + " " + y._2.getValue() + " " + y._3)
+                ? filters.init().foldLeft(" where ", (x, y) -> x + " " + y._1 + " " + y._2.getValue() + " " + toString(y._3) + " and ") +
+                filters.last().apply((x, y, z) -> x + " " + y.getValue() + " " + toString(z))
                 : "";
+    }
+
+    private String toString(final Object o) {
+        if (o.getClass().equals(Date.class)) {
+            final Date date = (Date) o;
+            return String.format("'%s-%s-%s %s:%s:%s.000000'",
+                    date.getYear(),
+                    StringUtils.leftPad(String.valueOf(date.getMonth()), 2, "0"),
+                    StringUtils.leftPad(String.valueOf(date.getDate()), 2, "0"),
+                    StringUtils.leftPad(String.valueOf(date.getHours()), 2, "0"),
+                    StringUtils.leftPad(String.valueOf(date.getMinutes()), 2, "0"),
+                    StringUtils.leftPad(String.valueOf(date.getSeconds()), 2, "0"));
+        } else if (o.getClass().equals(LocalDate.class)) {
+            final LocalDate date = (LocalDate) o;
+            return String.format("'%s-%s-%s'",
+                    date.getYear(),
+                    StringUtils.leftPad(String.valueOf(date.getMonthValue()), 2, "0"),
+                    StringUtils.leftPad(String.valueOf(date.getDayOfYear()), 2, "0"));
+        }
+        return o.toString();
     }
 
     private String getLimit() {

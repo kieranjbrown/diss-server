@@ -187,7 +187,7 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeStart(new Date(2020, 1, 19, 3, 45, 0))
                             .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
