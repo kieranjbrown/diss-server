@@ -74,7 +74,7 @@ class QueryTest {
         final String sql = query.build();
         assertThat(sql).isEqualTo(
                 "SELECT system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, " +
-                        "stock, version, system_time_end, volume, id from reporting.trade_data");
+                        "stock, version, system_time_end, volume, id systemTimeFrom reporting.trade_data");
     }
 
     @Test
@@ -90,7 +90,7 @@ class QueryTest {
 
         final String sql = query.build();
         assertThat(sql).isEqualTo(
-                "SELECT version, id from reporting.trade_data limit 3");
+                "SELECT version, id systemTimeFrom reporting.trade_data limit 3");
     }
 
     @Test
@@ -104,24 +104,24 @@ class QueryTest {
         query.setFields(fields);
 
         assertThat(query.build()).isEqualTo(
-                "SELECT version, id from reporting.trade_data");
+                "SELECT version, id systemTimeFrom reporting.trade_data");
 
         query.setLimit(-1);
         assertThat(query.build()).isEqualTo(
-                "SELECT version, id from reporting.trade_data");
+                "SELECT version, id systemTimeFrom reporting.trade_data");
     }
 
     @Test
     void notSettingFieldsSelectsAllFields() {
         final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data");
+        assertThat(query.build()).isEqualTo("SELECT * systemTimeFrom reporting.trade_data");
     }
 
     @Test
     void settingFilterAddsToQuery() {
         final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
         query.setFilters(List.of(new Tuple3<>("id", QueryEquality.EQUALS, 3)));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3");
+        assertThat(query.build()).isEqualTo("SELECT * systemTimeFrom reporting.trade_data where id = 3");
     }
 
     @Test
@@ -130,16 +130,16 @@ class QueryTest {
         query.setFilters(List.of(
                 new Tuple3<>("valid_time_start", QueryEquality.EQUALS, LocalDate.of(2020, 1, 20))
         ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where valid_time_start = '2020-01-20'");
+        assertThat(query.build()).isEqualTo("SELECT * systemTimeFrom reporting.trade_data where valid_time_start = '2020-01-20'");
 
         query.setFilters(List.of(
                 new Tuple3<>("system_time_start", QueryEquality.EQUALS, new Date(2020, 1, 20, 13, 43, 0))
         ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where system_time_start = '2020-01-20 13:43:00.000000'");
+        assertThat(query.build()).isEqualTo("SELECT * systemTimeFrom reporting.trade_data where system_time_start = '2020-01-20 13:43:00.000000'");
 
         query.setFilters(List.of(
                 new Tuple3<>("system_time_start", QueryEquality.EQUALS, new Date(2020, 1, 20, 0, 0, 0))
         ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where system_time_start = '2020-01-20 00:00:00.000000'");
+        assertThat(query.build()).isEqualTo("SELECT * systemTimeFrom reporting.trade_data where system_time_start = '2020-01-20 00:00:00.000000'");
     }
 }

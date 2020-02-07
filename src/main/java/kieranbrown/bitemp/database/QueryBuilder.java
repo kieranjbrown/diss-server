@@ -73,7 +73,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * http://cs.unibo.it/~montesi/CBD/Articoli/Temporal%20features%20in%20SQL2011.pdf
      */
 
-    public QueryBuilder<T> between(final Date startTime, final Date endTime) {
+    public QueryBuilder<T> systemTimeBetween(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
@@ -82,7 +82,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> asOf(final Date time) {
+    public QueryBuilder<T> systemTimeAsOf(final Date time) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time),
@@ -92,7 +92,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> from(final Date startTime, final Date endTime) {
+    public QueryBuilder<T> systemTimeFrom(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
@@ -110,11 +110,21 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2014/Neuere_Entwicklungen/Chapter_10_-_Temporal_DM.pdf
      * */
 
-    public QueryBuilder<T> contains(final LocalDate startDate, final LocalDate endDate) {
+    public QueryBuilder<T> validTimeContains(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
                         new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                )
+        );
+        return this;
+    }
+
+    public QueryBuilder<T> validTimeEquals(final LocalDate startDate, final LocalDate endDate) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("valid_time_start", EQUALS, startDate),
+                        new Tuple3<>("valid_time_end", EQUALS, endDate)
                 )
         );
         return this;

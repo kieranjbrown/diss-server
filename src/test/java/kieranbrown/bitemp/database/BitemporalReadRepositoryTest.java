@@ -418,7 +418,7 @@ class BitemporalReadRepositoryTest {
             final BitemporalKey key4 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(202).build();
             final BitemporalKey key5 = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(203).build();
 
-            //x contains y
+            //x validTimeContains y
             trade1.setTradeKey(key1)
                     .setStock("GOOGL")
                     .setBuySellFlag('B')
@@ -581,7 +581,7 @@ class BitemporalReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
-            //y contains x
+            //y validTimeContains x
             trade3.setTradeKey(key3)
                     .setStock("MSFT")
                     .setBuySellFlag('S')
@@ -593,7 +593,7 @@ class BitemporalReadRepositoryTest {
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
-            //x contains y
+            //x validTimeContains y
             trade4.setTradeKey(key4)
                     .setStock("NVDA")
                     .setBuySellFlag('B')

@@ -149,7 +149,7 @@ class QueryBuilderTest {
         }
 
         @Test
-        void betweenFilterAffectsResults() {
+        void systemTimeBetweenFilterAffectsResults() {
             //TODO: convert all system dates to ZonedDateTime or something similar: Hibernate takes literal values e.g. 1900+2020,
             //whereas val.getYear() returns only 2020 so big disparity
             final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
@@ -200,7 +200,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .between(startRange, endRange)
+                    .systemTimeBetween(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
 
@@ -212,7 +212,7 @@ class QueryBuilderTest {
         }
 
         @Test
-        void fromFilterAffectsResults() {
+        void systemTimeFromFilterAffectsResults() {
             final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
             final Date endRange = new Date(2020, 1, 20, 0, 0, 0);
 
@@ -261,7 +261,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .from(startRange, endRange)
+                    .systemTimeFrom(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
 
@@ -273,7 +273,7 @@ class QueryBuilderTest {
         }
 
         @Test
-        void asOfFilterAffectsResults() {
+        void systemTimeAsOfFilterAffectsResults() {
             final Date time = new Date(2020, 1, 10, 0, 0, 0);
 
             repository.saveAll(ImmutableList.of(
@@ -321,7 +321,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .asOf(time)
+                    .systemTimeAsOf(time)
                     .execute(entityManager)
                     .getResults();
 
@@ -333,7 +333,7 @@ class QueryBuilderTest {
         }
 
         @Test
-        void containsFilterAffectsResults() {
+        void validTimeContainsFilterAffectsResults() {
             final LocalDate startDate = LocalDate.of(2020, 1, 10);
             final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
@@ -392,7 +392,7 @@ class QueryBuilderTest {
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
-                    .contains(startDate, endDate)
+                    .validTimeContains(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
 
@@ -400,6 +400,67 @@ class QueryBuilderTest {
             results.forEach(x -> {
                 assertThat(x.getValidTimeStart()).isAfterOrEqualTo(startDate);
                 assertThat(x.getValidTimeEnd()).isBeforeOrEqualTo(endDate);
+            });
+        }
+
+        @Test
+        void validTimeEqualsFilterAffectsResults() {
+            final LocalDate startDate = LocalDate.of(2020, 1, 10);
+            final LocalDate endDate = LocalDate.of(2020, 1, 20);
+
+            repository.saveAll(ImmutableList.of(
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 15))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 15))
+                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL")
+            ));
+
+            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
+            final List<Trade> results = queryBuilder.allFields()
+                    .validTimeEquals(startDate, endDate)
+                    .execute(entityManager)
+                    .getResults();
+
+            assertThat(results).isNotNull().hasSize(1);
+            results.forEach(x -> {
+                assertThat(x.getValidTimeStart()).isEqualTo(startDate);
+                assertThat(x.getValidTimeEnd()).isEqualTo(endDate);
             });
         }
     }
