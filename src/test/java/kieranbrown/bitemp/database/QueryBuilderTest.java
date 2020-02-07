@@ -198,8 +198,6 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            QueryBuilder.select(Trade.class).allFields().execute(entityManager).getResults().forEach(System.out::println);
-
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
                     .betweenSystemTime(startRange, endRange)
@@ -215,8 +213,6 @@ class QueryBuilderTest {
 
         @Test
         void fromSystemTimeFilterAffectsResults() {
-            //TODO: convert all system dates to ZonedDateTime or something similar: Hibernate takes literal values e.g. 1900+2020,
-            //whereas val.getYear() returns only 2020 so big disparity
             final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
             final Date endRange = new Date(2020, 1, 20, 0, 0, 0);
 
@@ -263,8 +259,6 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            QueryBuilder.select(Trade.class).allFields().execute(entityManager).getResults().forEach(System.out::println);
-
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
             final List<Trade> results = queryBuilder.allFields()
                     .fromSystemTime(startRange, endRange)
@@ -275,6 +269,66 @@ class QueryBuilderTest {
             results.forEach(x -> {
                 assertThat(x.getSystemTimeStart()).isAfterOrEqualTo("2020-01-10 00:00:00.000000");
                 assertThat(x.getSystemTimeEnd()).isBefore("2020-01-20 00:00:00.000000");
+            });
+        }
+
+        @Test
+        void asOfSystemTimeFilterAffectsResults() {
+            final Date time = new Date(2020, 1, 10, 0, 0, 0);
+
+            repository.saveAll(ImmutableList.of(
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL")
+            ));
+
+            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
+            final List<Trade> results = queryBuilder.allFields()
+                    .asOfSystemTime(time)
+                    .execute(entityManager)
+                    .getResults();
+
+            assertThat(results).isNotNull().hasSize(2);
+            results.forEach(x -> {
+                assertThat(x.getSystemTimeStart()).isBeforeOrEqualTo("2020-01-10 00:00:00.000000");
+                assertThat(x.getSystemTimeEnd()).isAfter("2020-01-10 00:00:00.000000");
             });
         }
     }

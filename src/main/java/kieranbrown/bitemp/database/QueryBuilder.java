@@ -75,6 +75,16 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    public QueryBuilder<T> asOfSystemTime(final Date time) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time),
+                        new Tuple3<>("system_time_end", GREATER_THAN, time)
+                )
+        );
+        return this;
+    }
+
     public QueryBuilder<T> fromSystemTime(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
