@@ -14,8 +14,7 @@ import java.lang.reflect.Field;
 import java.util.Date;
 
 import static java.util.Objects.requireNonNull;
-import static kieranbrown.bitemp.database.QueryEquality.GREATER_THAN_EQUAL_TO;
-import static kieranbrown.bitemp.database.QueryEquality.LESS_THAN_EQUAL_TO;
+import static kieranbrown.bitemp.database.QueryEquality.*;
 
 public class QueryBuilder<T extends BitemporalModel<T>> {
     private final Query<T> query;
@@ -72,6 +71,16 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
                 List.of(
                         new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
                         new Tuple3<>("system_time_end", LESS_THAN_EQUAL_TO, endTime))
+        );
+        return this;
+    }
+
+    public QueryBuilder<T> fromSystemTime(final Date startTime, final Date endTime) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
+                        new Tuple3<>("system_time_end", LESS_THAN, endTime)
+                )
         );
         return this;
     }
