@@ -11,6 +11,7 @@ import kieranbrown.bitemp.models.BitemporalModel;
 import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.Date;
 
 import static java.util.Objects.requireNonNull;
@@ -109,7 +110,15 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2014/Neuere_Entwicklungen/Chapter_10_-_Temporal_DM.pdf
      * */
 
-
+    public QueryBuilder<T> contains(final LocalDate startDate, final LocalDate endDate) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
+                        new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                )
+        );
+        return this;
+    }
 
     private String getName(final Field field) {
         final String annotationName = field.getAnnotation(Column.class).name();
