@@ -143,6 +143,17 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    //x IMMEDIATELY PRECEDES y
+    public QueryBuilder<T> validTimeImmediatelyPrecedes(final LocalDate startDate, final LocalDate endDate) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("valid_time_start", LESS_THAN, startDate),
+                        new Tuple3<>("valid_time_end", EQUALS, endDate)
+                )
+        );
+        return this;
+    }
+
     private String getName(final Field field) {
         final String annotationName = field.getAnnotation(Column.class).name();
         return "".equals(annotationName) ? field.getName() : annotationName;

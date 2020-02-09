@@ -524,5 +524,66 @@ class QueryBuilderTest {
                 assertThat(x.getValidTimeEnd()).isBeforeOrEqualTo(endDate);
             });
         }
+
+        @Test
+        void validTimeImmediatelyPrecedesFilterAffectsResults() {
+            final LocalDate startDate = LocalDate.of(2020, 1, 10);
+            final LocalDate endDate = LocalDate.of(2020, 1, 20);
+
+            repository.saveAll(ImmutableList.of(
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 19))
+                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 11))
+                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL")
+            ));
+
+            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
+            final List<Trade> results = queryBuilder.allFields()
+                    .validTimeImmediatelyPrecedes(startDate, endDate)
+                    .execute(entityManager)
+                    .getResults();
+
+            assertThat(results).isNotNull().hasSize(1);
+            results.forEach(x -> {
+                assertThat(x.getValidTimeStart()).isBefore(startDate);
+                assertThat(x.getValidTimeEnd()).isBeforeOrEqualTo(endDate);
+            });
+        }
     }
 }
