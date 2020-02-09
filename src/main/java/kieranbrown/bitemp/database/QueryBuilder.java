@@ -110,6 +110,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2014/Neuere_Entwicklungen/Chapter_10_-_Temporal_DM.pdf
      * */
 
+    //CONTAINS x
     public QueryBuilder<T> validTimeContains(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
@@ -120,11 +121,23 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    //x EQUALS y
     public QueryBuilder<T> validTimeEquals(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("valid_time_start", EQUALS, startDate),
                         new Tuple3<>("valid_time_end", EQUALS, endDate)
+                )
+        );
+        return this;
+    }
+
+    //x PRECEDES Y
+    public QueryBuilder<T> validTimePrecedes(final LocalDate startDate, final LocalDate endDate) {
+        filters = filters.appendAll(
+                List.of(
+                        new Tuple3<>("valid_time_start", LESS_THAN, startDate),
+                        new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
                 )
         );
         return this;

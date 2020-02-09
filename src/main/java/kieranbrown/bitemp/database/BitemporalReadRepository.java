@@ -32,14 +32,17 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
     @Query(value = "select * from #{#entityName} t where t.id = ?1 and t.system_time_end >= '9999-12-31'", nativeQuery = true)
     T findMostRecentBySystemTime(UUID id);
 
+    //DONE
     //equivalent to BETWEEN x and y (inclusive on both sides)
     @Query(value = "select * from #{#entityName} t where t.system_time_start >= ?1 and t.system_time_end <= ?2", nativeQuery = true)
     List<T> findAllBetweenSystemTimeRange(Date startTime, Date endTime);
 
+    //DONE
     //equivalent to AS OF x (system time) 
     @Query(value = "select * from #{#entityName} t where t.system_time_start <= ?1 and t.system_time_end > ?1", nativeQuery = true)
     List<T> findAllAsOfSystemTime(Date systemTime);
 
+    //DONE
     //equivalent to FROM x to y (inclusive / exclusive)
     @Query(value = "select * from #{#entityName} t where t.system_time_start >= ?1 and t.system_time_end < ?2", nativeQuery = true)
     List<T> findAllFromSystemTimeRange(Date startTime, Date endTime);
@@ -52,6 +55,7 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
      * http://wwwlgis.informatik.uni-kl.de/cms/fileadmin/courses/SS2014/Neuere_Entwicklungen/Chapter_10_-_Temporal_DM.pdf
      * */
 
+    //DONE
     //equivalent to CONTAINS x
     @Query(value = "select * from #{#entityName} t where t.valid_time_start >= ?1 and t.valid_time_end <= ?2", nativeQuery = true)
     List<T> findAllContainingValidTime(LocalDate validTimeStart, LocalDate validTimeEnd);
@@ -61,6 +65,7 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
     @Query(value = "select * from #{#entityName} t where (t.valid_time_start >= ?1 and t.valid_time_end <= ?2) or (t.valid_time_start >= ?1 and t.valid_time_start < ?2 and t.valid_time_end > ?2) or (t.valid_time_start <= ?1 and t.valid_time_end >= ?2) or (t.valid_time_start <= ?1 and t.valid_time_end >= ?1 and t.valid_time_end < ?2)", nativeQuery = true)
     List<T> findAllOverlappingValidTime(LocalDate startDate, LocalDate endDate);
 
+    //DONE
     //equivalent to x equals y
     @Query(value = "select * from #{#entityName} t where t.valid_time_start = ?1 and t.valid_time_end = ?2", nativeQuery = true)
     List<T> findAllWhereValidTimeIsEqual(LocalDate startDate, LocalDate endDate);
