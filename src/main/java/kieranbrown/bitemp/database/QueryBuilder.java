@@ -133,22 +133,23 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     //x PRECEDES Y
-    public QueryBuilder<T> validTimePrecedes(final LocalDate startDate, final LocalDate endDate) {
+    public QueryBuilder<T> validTimePrecedes(final LocalDate startDate) {
+        //TODO: Should be doing checks here to enforce startDate <= endDate?
         filters = filters.appendAll(
                 List.of(
-                        new Tuple3<>("valid_time_start", LESS_THAN, startDate),
-                        new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                        new Tuple3<>("valid_time_start", LESS_THAN_EQUAL_TO, startDate),
+                        new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, startDate)
                 )
         );
         return this;
     }
 
     //x IMMEDIATELY PRECEDES y
-    public QueryBuilder<T> validTimeImmediatelyPrecedes(final LocalDate startDate, final LocalDate endDate) {
+    public QueryBuilder<T> validTimeImmediatelyPrecedes(final LocalDate startDate) {
         filters = filters.appendAll(
                 List.of(
                         new Tuple3<>("valid_time_start", LESS_THAN, startDate),
-                        new Tuple3<>("valid_time_end", EQUALS, endDate)
+                        new Tuple3<>("valid_time_end", EQUALS, startDate)
                 )
         );
         return this;
