@@ -9,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import javax.persistence.Entity;
-
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -59,6 +58,13 @@ class Query<T extends BitemporalModel<T>> {
         this.limit = limit;
     }
 
+    public String build() {
+        return Match(queryType).of(
+                Case($(x -> x.equals(SELECT)), buildSelectQuery()),
+                Case($(x -> x.equals(SELECT_DISTINCT)), buildDistinctSelectQuery())
+        );
+    }
+
     //TODO: figure out how to make this all prepared without a connection?
     private String buildSelectQuery() {
         return "SELECT " +
@@ -69,10 +75,13 @@ class Query<T extends BitemporalModel<T>> {
                 getLimit();
     }
 
-    public String build() {
-        return Match(queryType).of(
-                Case($(x -> x.equals(SELECT) || x.equals(SELECT_DISTINCT)), buildSelectQuery())
-        );
+    private String buildDistinctSelectQuery() {
+        return "SELECT DISTINCT " +
+                getFields() +
+                " from " +
+                getTableName() +
+                getFilters() +
+                getLimit();
     }
 
     private Object getFields() {
