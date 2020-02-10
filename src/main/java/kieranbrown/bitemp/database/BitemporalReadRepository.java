@@ -80,10 +80,12 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
     @Query(value = "select * from #{#entityName} t where t.valid_time_start < ?1 and t.valid_time_end = ?2", nativeQuery = true)
     List<T> findAllWhereValidTimeIsImmediatelyPreceded(LocalDate startDate, LocalDate endDate);
 
+    //done
     //equivalent to x succeeds y
     @Query(value = "select * from #{#entityName} t where t.valid_time_start >= ?1", nativeQuery = true)
     List<T> findAllWhereValidTimeIsSucceeded(LocalDate endDate);
 
+    //done
     //equivalent to x immediately succeeds y
     @Query(value = "select * from #{#entityName} t where t.valid_time_start = ?1", nativeQuery = true)
     List<T> findAllWhereValidTimeIsImmediatelySucceeded(LocalDate endDate);
