@@ -2,7 +2,7 @@ package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
-import io.vavr.collection.HashMap;
+import io.vavr.collection.LinkedHashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
@@ -37,7 +37,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         queryClass = clazz;
         this.query = new Query<>(queryType, clazz);
         results = Option.none();
-        fields = List.empty();
+        fields = baseFields.map(x -> new Tuple2<>(x, null));
         filters = List.empty();
     }
 
@@ -62,8 +62,13 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    public QueryBuilder<T> addField(final String field) {
+        fields = fields.append(new Tuple2<>(field, null));
+        return this;
+    }
+
     public QueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
-        filters = filters.append(new Tuple3<>(column, equality, value));
+        filters = filters.prepend(new Tuple3<>(column, equality, value));
         return this;
     }
 
@@ -182,7 +187,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     public QueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
-        query.setFields(HashMap.ofEntries(fields));
+        query.setFields(LinkedHashMap.ofEntries(fields));
         query.setFilters(filters);
         results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
         return this;

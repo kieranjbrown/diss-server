@@ -104,6 +104,36 @@ class QueryBuilderTest {
         }
 
         @Test
+        void canAddSingleField() {
+            final Trade trade = new Trade().setTradeKey(KEY)
+                    .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                    .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                    .setVolume(200)
+                    .setPrice(new BigDecimal("123.45"))
+                    .setMarketLimitFlag('M')
+                    .setBuySellFlag('B')
+                    .setStock("GOOGL");
+
+            repository.save(trade);
+
+            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class).addField("stock").execute(entityManager);
+            final List<Trade> results = queryBuilder.getResults();
+            assertThat(results).isNotNull().hasSize(1);
+            assertThat(queryBuilder).extracting("query")
+                    .hasFieldOrPropertyWithValue("fields", HashMap.ofEntries(
+                            new Tuple2<>("id", null),
+                            new Tuple2<>("version", null),
+                            new Tuple2<>("valid_time_start", null),
+                            new Tuple2<>("valid_time_end", null),
+                            new Tuple2<>("system_time_start", null),
+                            new Tuple2<>("system_time_end", null),
+                            new Tuple2<>("stock", null)
+                    ));
+        }
+
+        @Test
         void throwsForNullEntityManager() {
             assertThat(assertThrows(NullPointerException.class, () -> select(Trade.class).execute(null)))
                     .hasMessage("entityManager cannot be null");
@@ -716,6 +746,44 @@ class QueryBuilderTest {
                 assertThat(x.getValidTimeStart()).isEqualTo(endDate);
                 assertThat(x.getValidTimeEnd()).isAfter(endDate);
             });
+        }
+
+        @Test
+        void canCreateDistinctQuery() {
+            repository.saveAll(ImmutableList.of(
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 19))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setVolume(200)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
+                            .setStock("GOOGL")
+            ));
+
+//            QueryBuilder.selectDistinct(Trade.class).
         }
     }
 }
