@@ -71,6 +71,11 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    //TODO: make queryFilter class to allow for OR queries, maybe make internals of this class use it it too?
+//    public QueryBuilder<T> where (final QueryFilter queryFilter) {
+//        return this;
+//    }
+
     /*
      * SYSTEM TIME METHODS
      * These methods are implemented in accordance with the SQL:2011 specification, discussed at

@@ -62,6 +62,7 @@ public interface BitemporalReadRepository<T extends BitemporalModel<T>> extends 
 
     //equivalent to x overlaps y
     //TODO: can this be refined
+    //TODO: Migrate to QueryBuilder (figure out OR)
     @Query(value = "select * from #{#entityName} t where (t.valid_time_start >= ?1 and t.valid_time_end <= ?2) or (t.valid_time_start >= ?1 and t.valid_time_start < ?2 and t.valid_time_end > ?2) or (t.valid_time_start <= ?1 and t.valid_time_end >= ?2) or (t.valid_time_start <= ?1 and t.valid_time_end >= ?1 and t.valid_time_end < ?2)", nativeQuery = true)
     List<T> findAllOverlappingValidTime(LocalDate startDate, LocalDate endDate);
 
