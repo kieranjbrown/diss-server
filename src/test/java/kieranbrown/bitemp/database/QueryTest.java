@@ -128,9 +128,9 @@ class QueryTest {
     void datesAreFormattedCorrectlyForSQL() {
         final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
         query.setFilters(List.of(
-                new Tuple3<>("valid_time_start", QueryEquality.EQUALS, LocalDate.of(2020, 1, 20))
+                new Tuple3<>("valid_time_start", QueryEquality.EQUALS, LocalDate.of(2020, 2, 20))
         ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where valid_time_start = '2020-01-20'");
+        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where valid_time_start = '2020-02-20'");
 
         query.setFilters(List.of(
                 new Tuple3<>("system_time_start", QueryEquality.EQUALS, new Date(2020, 1, 20, 13, 43, 0))
@@ -141,6 +141,15 @@ class QueryTest {
                 new Tuple3<>("system_time_start", QueryEquality.EQUALS, new Date(2020, 1, 20, 0, 0, 0))
         ));
         assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where system_time_start = '2020-01-20 00:00:00.000000'");
+    }
+
+    @Test
+    void stringIsCorrectlyFormattedForSql() {
+        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
+        query.setFilters(List.of(
+                new Tuple3<>("stock", QueryEquality.EQUALS, "AMZN")
+        ));
+        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where stock = 'AMZN'");
     }
 
     @Test

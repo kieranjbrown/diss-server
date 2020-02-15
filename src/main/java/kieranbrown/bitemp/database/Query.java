@@ -120,7 +120,9 @@ class Query<T extends BitemporalModel<T>> {
             return String.format("'%s-%s-%s'",
                     date.getYear(),
                     StringUtils.leftPad(String.valueOf(date.getMonthValue()), 2, "0"),
-                    StringUtils.leftPad(String.valueOf(date.getDayOfYear()), 2, "0"));
+                    StringUtils.leftPad(String.valueOf(date.getDayOfMonth()), 2, "0"));
+        } else if (o.getClass().equals(String.class)) {
+            return String.format("'%s'", o);
         }
         return o.toString();
     }

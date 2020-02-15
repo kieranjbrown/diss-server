@@ -51,8 +51,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     //TODO: other types of queries
 
-    //TODO: is there any point to this when Query can handle it
-    //TODO: individual fields
+    //TODO: remove because can only retrieve all the fields
     public QueryBuilder<T> allFields() {
         fields = Stream.of(queryClass.getDeclaredFields())
                 .map(this::getName)
