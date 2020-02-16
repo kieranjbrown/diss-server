@@ -14,8 +14,7 @@ import java.util.Date;
 
 import static io.vavr.API.*;
 import static java.util.Objects.requireNonNull;
-import static kieranbrown.bitemp.database.QueryType.SELECT;
-import static kieranbrown.bitemp.database.QueryType.SELECT_DISTINCT;
+import static kieranbrown.bitemp.database.QueryType.*;
 
 class Query<T extends BitemporalModel<T>> {
 
@@ -60,9 +59,20 @@ class Query<T extends BitemporalModel<T>> {
 
     public String build() {
         return Match(queryType).of(
-                Case($(x -> x.equals(SELECT)), buildSelectQuery()),
-                Case($(x -> x.equals(SELECT_DISTINCT)), buildDistinctSelectQuery())
+                Case($(SELECT), o -> buildSelectQuery()),
+                Case($(SELECT_DISTINCT), o -> buildDistinctSelectQuery()),
+                Case($(INSERT), o -> buildInsertQuery())
         );
+    }
+
+    private String buildInsertQuery() {
+        return "INSERT INTO " +
+                getTableName() +
+                " (" +
+                getFields() +
+                ") VALUES (" +
+                getValues() +
+                ")";
     }
 
     //TODO: figure out how to make this all prepared without a connection?
@@ -88,6 +98,11 @@ class Query<T extends BitemporalModel<T>> {
         return fields.length() > 0
                 ? fields.keySet().reduce((x, y) -> x + ", " + y)
                 : "*";
+    }
+
+    //TODO: should this be an object?
+    private Object getValues() {
+        return fields.values().map(this::toString).reduce((x, y) -> x + ", " + y);
     }
 
     public void setFields(final Map<String, Object> fields) {
@@ -121,7 +136,7 @@ class Query<T extends BitemporalModel<T>> {
                     date.getYear(),
                     StringUtils.leftPad(String.valueOf(date.getMonthValue()), 2, "0"),
                     StringUtils.leftPad(String.valueOf(date.getDayOfMonth()), 2, "0"));
-        } else if (o.getClass().equals(String.class)) {
+        } else if (o.getClass().equals(String.class) || o.getClass().equals(Character.class)) {
             return String.format("'%s'", o);
         }
         return o.toString();
