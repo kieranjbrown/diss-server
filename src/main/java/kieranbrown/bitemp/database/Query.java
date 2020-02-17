@@ -11,6 +11,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import javax.persistence.Entity;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.UUID;
 
 import static io.vavr.API.*;
 import static java.util.Objects.requireNonNull;
@@ -136,7 +137,7 @@ class Query<T extends BitemporalModel<T>> {
                     date.getYear(),
                     StringUtils.leftPad(String.valueOf(date.getMonthValue()), 2, "0"),
                     StringUtils.leftPad(String.valueOf(date.getDayOfMonth()), 2, "0"));
-        } else if (o.getClass().equals(String.class) || o.getClass().equals(Character.class)) {
+        } else if (o.getClass().equals(String.class) || o.getClass().equals(Character.class) || o.getClass().equals(UUID.class)) {
             return String.format("'%s'", o);
         }
         return o.toString();

@@ -155,6 +155,25 @@ class QueryTest {
     }
 
     @Test
+    void uuidIsCorrectlyFormatted() {
+        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
+        final UUID uuid = UUID.randomUUID();
+        query.setFilters(List.of(
+                new Tuple3<>("id", QueryEquality.EQUALS, uuid)
+        ));
+        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = '" + uuid + "'");
+    }
+
+    @Test
+    void bigDecimalIsCorrectlyFormatted() {
+        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
+        query.setFilters(List.of(
+                new Tuple3<>("price", QueryEquality.EQUALS, new BigDecimal("123.45"))
+        ));
+        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where price = '123.45'");
+    }
+
+    @Test
     void queryIsBuiltAppropriatelyForDistinctQuery() {
         final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
         query.setFields(HashMap.ofEntries(new Tuple2<>("id", null), new Tuple2<>("version", null)));
@@ -181,6 +200,6 @@ class QueryTest {
 
         assertThat(tradeQuery.build()).isNotNull().isEqualTo("INSERT INTO reporting.trade_data " +
                 "(system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, stock, version, system_time_end, volume, id) VALUES " +
-                "('2020-01-20 03:45:00.000000', 'B', 123.45, '2020-01-21', '2020-01-20', 'M', 'GOOGL', 3, '2020-01-21 03:45:00.000000', 200, " + tradeId + ")");
+                "('2020-01-20 03:45:00.000000', 'B', 123.45, '2020-01-21', '2020-01-20', 'M', 'GOOGL', 3, '2020-01-21 03:45:00.000000', 200, '" + tradeId + "')");
     }
 }

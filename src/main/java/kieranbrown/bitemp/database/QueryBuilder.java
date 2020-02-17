@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryEquality.*;
@@ -20,6 +21,7 @@ import static kieranbrown.bitemp.database.QueryEquality.*;
 public class QueryBuilder<T extends BitemporalModel<T>> {
     private final Query<T> query;
     private final Class<T> queryClass;
+    private final QueryType queryType;
 
     private final List<String> baseFields = List.of(
             "id",
@@ -35,6 +37,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     private QueryBuilder(final QueryType queryType, final Class<T> clazz) {
         queryClass = clazz;
+        this.queryType = queryType;
         this.query = new Query<>(queryType, clazz);
         results = Option.none();
         fields = baseFields.map(x -> new Tuple2<>(x, null));
@@ -49,16 +52,57 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return new QueryBuilder<>(QueryType.SELECT, clazz);
     }
 
+    //TODO: split these out into other classes e.g. InsertQueryBuilder etc?
+    public static <S extends BitemporalModel<S>> QueryBuilder<S> insert(final Class<S> clazz) {
+        return new QueryBuilder<>(QueryType.INSERT, clazz);
+    }
+
+    public QueryBuilder<T> from(final T object) {
+        fields = List.of(
+                new Tuple2<>("id", object.getTradeKey().getId()),
+                new Tuple2<>("version", object.getTradeKey().getVersion()),
+                new Tuple2<>("valid_time_start", object.getValidTimeStart()),
+                new Tuple2<>("valid_time_end", object.getValidTimeEnd()),
+                new Tuple2<>("system_time_start", object.getSystemTimeStart()),
+                new Tuple2<>("system_time_end", object.getSystemTimeEnd()));
+
+        fields = fields.appendAll(Stream.of(queryClass.getDeclaredFields())
+                .map(x -> new Tuple2<>(x, getFieldName(x)))
+                .map(x -> new Tuple2<>(getColumnName(x._1), getFieldValue(x._2, object)))
+                .collect(Collectors.toList()));
+        return this;
+    }
+
+    private String getFieldName(final Field field) {
+        return field.getName();
+    }
+
+    private Object getFieldValue(final String fieldName, final T object) {
+        try {
+            final Field declaredField = queryClass.getDeclaredField(fieldName);
+            declaredField.setAccessible(true);
+            return declaredField.get(object);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("error");
+    }
+
     //TODO: other types of queries
 
     //TODO: remove because can only retrieve all the fields
     public QueryBuilder<T> allFields() {
         fields = Stream.of(queryClass.getDeclaredFields())
-                .map(this::getName)
+                .map(this::getColumnName)
                 .insertAll(0, baseFields)
                 .map(x -> new Tuple2<>(x, null))
                 .toList();
         return this;
+    }
+
+    private String getColumnName(final Field field) {
+        final String annotationName = field.getAnnotation(Column.class).name();
+        return "".equals(annotationName) ? field.getName() : annotationName;
     }
 
     public QueryBuilder<T> addField(final String field) {
@@ -184,16 +228,18 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    private String getName(final Field field) {
-        final String annotationName = field.getAnnotation(Column.class).name();
-        return "".equals(annotationName) ? field.getName() : annotationName;
-    }
-
     public QueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFields(LinkedHashMap.ofEntries(fields));
         query.setFilters(filters);
-        results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
+        //TODO: needs changing for queries that don't return results
+        //TODO: change to result mapper so can actually choose which fields you want?
+        if (queryType.equals(QueryType.SELECT_DISTINCT) || queryType.equals(QueryType.SELECT)) {
+            results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
+        } else {
+            entityManager.createNativeQuery(query.build()).executeUpdate();
+//            results = Option.of
+        }
         return this;
     }
 

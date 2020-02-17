@@ -45,7 +45,7 @@ class QueryBuilderTest {
 
         @Test
         void canCreateQueryForMultipleResults() {
-            assertThat(select(Trade.class)).isNotNull()
+            assertThat(QueryBuilder.select(Trade.class)).isNotNull()
                     .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT, Trade.class))
                     .hasFieldOrPropertyWithValue("queryClass", Trade.class);
         }
@@ -67,7 +67,6 @@ class QueryBuilderTest {
             );
 
             System.out.println("test fields");
-            fields.keySet().forEach(System.out::println);
 
             final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
             queryBuilder.execute(entityManager);
@@ -784,6 +783,49 @@ class QueryBuilderTest {
             ));
 
 //            QueryBuilder.selectDistinct(Trade.class).
+            //TODO: finish this
+        }
+    }
+
+    @DataJpaTest
+    @SpringJUnitConfig
+    @Nested
+    class insertQueries {
+
+        @Autowired
+        private TradeReadRepository readRepository;
+
+        @Autowired
+        private TradeWriteRepository writeRepository;
+
+        @PersistenceContext
+        private EntityManager entityManager;
+
+        @Test
+        void canCreateQueryForInsert() {
+            assertThat(QueryBuilder.insert(Trade.class)).isNotNull()
+                    .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.INSERT, Trade.class))
+                    .hasFieldOrPropertyWithValue("queryClass", Trade.class);
+        }
+
+        @Test
+        void insertFromObjectInsertsObject() {
+            final BitemporalKey key = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build();
+            final Trade trade = new Trade().setTradeKey(key)
+                    .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                    .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                    .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
+                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                    .setVolume(200)
+                    .setPrice(new BigDecimal("123.45"))
+                    .setMarketLimitFlag('M')
+                    .setBuySellFlag('B')
+                    .setStock("GOOGL");
+
+            QueryBuilder.insert(Trade.class).from(trade).execute(entityManager);
+
+            final Trade retrievedTrade = readRepository.getOne(key);
+            assertThat(retrievedTrade).isNotNull().usingRecursiveComparison().isEqualTo(trade);
         }
     }
 }
