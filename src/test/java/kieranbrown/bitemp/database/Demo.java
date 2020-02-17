@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
+import static kieranbrown.bitemp.database.QueryEquality.EQUALS;
+
 @SpringJUnitConfig
 @DataJpaTest
 class Demo {
@@ -72,7 +74,7 @@ class Demo {
         System.out.println("retrieve all where stock is google");
         QueryBuilder.select(Trade.class)
                 .allFields()
-                .where("stock", QueryEquality.EQUALS, "GOOGL")
+                .where("stock", EQUALS, "GOOGL")
                 .execute(entityManager)
                 .getResults()
                 .forEach(System.out::println);
@@ -127,6 +129,30 @@ class Demo {
         QueryBuilder.select(Trade.class)
                 .allFields()
                 .validTimePrecedes(LocalDate.of(2020, 2, 10))
+                .execute(entityManager)
+                .getResults()
+                .forEach(System.out::println);
+    }
+
+    @Test
+    void insertQuery() {
+        QueryBuilder.insert(Trade.class)
+                .from(new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
+                        .setValidTimeStart(LocalDate.of(2019, 10, 20))
+                        .setValidTimeEnd(LocalDate.of(9999, 12, 31))
+                        .setSystemTimeStart(new Date(2020, 1, 19, 3, 45, 0))
+                        .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                        .setVolume(10)
+                        .setPrice(new BigDecimal("734.45"))
+                        .setMarketLimitFlag('M')
+                        .setBuySellFlag('B')
+                        .setStock("AAPL"))
+                .execute(entityManager);
+
+        System.out.println("retrieving inserted trade");
+        QueryBuilder.select(Trade.class)
+                .allFields()
+                .where("version", EQUALS, 3)
                 .execute(entityManager)
                 .getResults()
                 .forEach(System.out::println);
