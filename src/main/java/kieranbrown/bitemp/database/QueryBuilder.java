@@ -33,7 +33,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     private List<Tuple2<String, Object>> fields;
     private Option<List<T>> results;
-    private List<Tuple3<String, QueryEquality, Object>> filters;
+    private List<QueryFilter> filters;
 
     private QueryBuilder(final QueryType queryType, final Class<T> clazz) {
         queryClass = clazz;
@@ -78,6 +78,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     private Object getFieldValue(final String fieldName, final T object) {
+        //TODO: tidy this mess
         try {
             final Field declaredField = queryClass.getDeclaredField(fieldName);
             declaredField.setAccessible(true);
@@ -111,7 +112,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     public QueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
-        filters = filters.prepend(new Tuple3<>(column, equality, value));
+        filters = filters.append(new QueryFilter(new Tuple3<>(column, equality, value)));
         return this;
     }
 
@@ -129,8 +130,9 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     public QueryBuilder<T> systemTimeBetween(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
-                        new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
-                        new Tuple3<>("system_time_end", LESS_THAN_EQUAL_TO, endTime))
+                        new QueryFilter(new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime)),
+                        new QueryFilter(new Tuple3<>("system_time_end", LESS_THAN_EQUAL_TO, endTime))
+                )
         );
         return this;
     }
@@ -138,8 +140,8 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     public QueryBuilder<T> systemTimeAsOf(final Date time) {
         filters = filters.appendAll(
                 List.of(
-                        new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time),
-                        new Tuple3<>("system_time_end", GREATER_THAN, time)
+                        new QueryFilter(new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time)),
+                        new QueryFilter(new Tuple3<>("system_time_end", GREATER_THAN, time))
                 )
         );
         return this;
@@ -148,8 +150,8 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     public QueryBuilder<T> systemTimeFrom(final Date startTime, final Date endTime) {
         filters = filters.appendAll(
                 List.of(
-                        new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime),
-                        new Tuple3<>("system_time_end", LESS_THAN, endTime)
+                        new QueryFilter(new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime)),
+                        new QueryFilter(new Tuple3<>("system_time_end", LESS_THAN, endTime))
                 )
         );
         return this;
@@ -167,8 +169,8 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     public QueryBuilder<T> validTimeContains(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
-                        new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
-                        new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                        new QueryFilter(new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate)),
+                        new QueryFilter(new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate))
                 )
         );
         return this;
@@ -178,8 +180,8 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     public QueryBuilder<T> validTimeEquals(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
-                        new Tuple3<>("valid_time_start", EQUALS, startDate),
-                        new Tuple3<>("valid_time_end", EQUALS, endDate)
+                        new QueryFilter(new Tuple3<>("valid_time_start", EQUALS, startDate)),
+                        new QueryFilter(new Tuple3<>("valid_time_end", EQUALS, endDate))
                 )
         );
         return this;
@@ -188,43 +190,25 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     //x PRECEDES Y
     public QueryBuilder<T> validTimePrecedes(final LocalDate startDate) {
         //TODO: Should be doing checks here to enforce startDate <= endDate?
-        filters = filters.appendAll(
-                List.of(
-//                        new Tuple3<>("valid_time_start", LESS_THAN_EQUAL_TO, startDate),
-                        new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, startDate)
-                )
-        );
+        filters = filters.append(new QueryFilter(new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, startDate)));
         return this;
     }
 
     //x IMMEDIATELY PRECEDES y
     public QueryBuilder<T> validTimeImmediatelyPrecedes(final LocalDate startDate) {
-        filters = filters.appendAll(
-                List.of(
-//                        new Tuple3<>("valid_time_start", LESS_THAN, startDate),
-                        new Tuple3<>("valid_time_end", EQUALS, startDate)
-                )
-        );
+        filters = filters.append(new QueryFilter(new Tuple3<>("valid_time_end", EQUALS, startDate)));
         return this;
     }
 
     //x SUCCEEDS y
     public QueryBuilder<T> validTimeSucceeds(final LocalDate endDate) {
-        filters = filters.appendAll(
-                List.of(
-                        new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, endDate)
-                )
-        );
+        filters = filters.append(new QueryFilter(new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, endDate)));
         return this;
     }
 
     //x IMMEDIATELY SUCCEEDS y
     public QueryBuilder<T> validTimeImmediatelySucceeds(final LocalDate endDate) {
-        filters = filters.appendAll(
-                List.of(
-                        new Tuple3<>("valid_time_start", EQUALS, endDate)
-                )
-        );
+        filters = filters.append(new QueryFilter(new Tuple3<>("valid_time_start", EQUALS, endDate)));
         return this;
     }
 
@@ -235,6 +219,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         //TODO: needs changing for queries that don't return results
         //TODO: change to result mapper so can actually choose which fields you want?
         if (queryType.equals(QueryType.SELECT_DISTINCT) || queryType.equals(QueryType.SELECT)) {
+            System.out.println(query.build());
             results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
         } else {
             entityManager.createNativeQuery(query.build()).executeUpdate();

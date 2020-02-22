@@ -1,6 +1,5 @@
 package kieranbrown.bitemp.database;
 
-import io.vavr.Tuple3;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
@@ -22,7 +21,7 @@ class Query<T extends BitemporalModel<T>> {
     private final QueryType queryType;
     private final Class<T> queryClass;
     private Map<String, Object> fields;
-    private List<Tuple3<String, QueryEquality, Object>> filters;
+    private List<QueryFilter> filters;
     private int limit = -1;
 
     public Query(final QueryType queryType, final Class<T> clazz) {
@@ -47,8 +46,20 @@ class Query<T extends BitemporalModel<T>> {
                 .isEquals();
     }
 
-    public void setFilters(final List<Tuple3<String, QueryEquality, Object>> filters) {
-        this.filters = filters;
+    private String getFilters() {
+        //TODO: tidy?
+        return filters.length() > 0
+                ? filters.init().foldLeft(" where", (x, y) -> x + " " + mapFilter(y) + " and") + " " +
+                mapFilter(filters.last())
+                : "";
+    }
+
+    private String mapFilter(final QueryFilter filter) {
+        return filter.getFilters().length() > 1
+                ? "(" +
+                filter.getFilters().map(x -> x._1 + " " + x._2.getValue() + " " + toString(x._3)).reduce((x, y) -> x + " OR " + y) +
+                ")"
+                : filter.getFilters().map(x -> x._1 + " " + x._2.getValue() + " " + toString(x._3)).reduce((x, y) -> x + " OR " + y);
     }
 
     /*
@@ -101,8 +112,7 @@ class Query<T extends BitemporalModel<T>> {
                 : "*";
     }
 
-    //TODO: should this be an object?
-    private Object getValues() {
+    private String getValues() {
         return fields.values().map(this::toString).reduce((x, y) -> x + ", " + y);
     }
 
@@ -114,11 +124,8 @@ class Query<T extends BitemporalModel<T>> {
         return queryClass.getAnnotation(Entity.class).name();
     }
 
-    private String getFilters() {
-        return filters.length() > 0
-                ? filters.init().foldLeft(" where ", (x, y) -> x + " " + y._1 + " " + y._2.getValue() + " " + toString(y._3) + " and ") +
-                filters.last().apply((x, y, z) -> x + " " + y.getValue() + " " + toString(z))
-                : "";
+    public void setFilters(final List<QueryFilter> filters) {
+        this.filters = filters;
     }
 
     private String toString(final Object o) {
