@@ -55,11 +55,12 @@ class Query<T extends BitemporalModel<T>> {
     }
 
     private String mapFilter(final QueryFilter filter) {
-        return filter.getFilters().length() > 1
-                ? "(" +
-                filter.getFilters().map(x -> x._1 + " " + x._2.getValue() + " " + toString(x._3)).reduce((x, y) -> x + " OR " + y) +
-                ")"
-                : filter.getFilters().map(x -> x._1 + " " + x._2.getValue() + " " + toString(x._3)).reduce((x, y) -> x + " OR " + y);
+//        return filter.getFilters().length() > 1
+//                ? "(" +
+//                filter.getFilters().map(x -> x._1 + " " + x._2.getValue() + " " + toString(x._3)).reduce((x, y) -> x + " OR " + y) +
+//                ")"
+//                : filter.getFilters().map(x -> x._1 + " " + x._2.getValue() + " " + toString(x._3)).reduce((x, y) -> x + " OR " + y);
+        return "";
     }
 
     /*
