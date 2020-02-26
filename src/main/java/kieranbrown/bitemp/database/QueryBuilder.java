@@ -214,14 +214,14 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     //x OVERLAPS y
     public QueryBuilder<T> validTimeOverlaps(final LocalDate startDate, final LocalDate endDate) {
-        filters = filters.appendAll(
-                List.of(
-                        new SingleQueryFilter(List.of(
-                                new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
-                                new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
-                        ))
-                )
-        );
+//        filters = filters.appendAll(
+//                List.of(
+//                        new SingleQueryFilter(List.of(
+//                                new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
+//                                new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+//                        ))
+//                )
+//        );
         return this;
     }
 
