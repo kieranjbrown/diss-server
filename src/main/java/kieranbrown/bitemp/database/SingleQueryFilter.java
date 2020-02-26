@@ -1,6 +1,7 @@
 package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple3;
+import kieranbrown.bitemp.utils.QueryUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -25,7 +26,7 @@ public class SingleQueryFilter implements QueryFilter {
 
     public String getFilters() {
         //TODO: the format string to SQL method in Query needs to be moved elsewhere, or this method needs moved
-        return filter.apply((x, y, z) -> String.format("%s %s %s", x, y.getValue(), z));
+        return filter.apply((x, y, z) -> String.format("%s %s %s", x, y.getValue(), QueryUtils.toString(z)));
     }
 
     @Override

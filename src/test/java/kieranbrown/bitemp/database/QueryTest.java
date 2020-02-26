@@ -184,11 +184,11 @@ class QueryTest {
     void canBuildQueryWithOrFilter() {
         final Query query = new Query<>(QueryType.SELECT, Trade.class);
         query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3))
-//                new SingleQueryFilter(List.of(
-//                        new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10),
-//                        new Tuple3<>("version", QueryEquality.LESS_THAN_EQUAL_TO, -10)
-//                ))
+                new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3)),
+                new OrQueryFilter(
+                        new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10),
+                        new Tuple3<>("version", QueryEquality.LESS_THAN_EQUAL_TO, -10)
+                )
         ));
 
         assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3 and (version >= 10 OR version <= -10)");

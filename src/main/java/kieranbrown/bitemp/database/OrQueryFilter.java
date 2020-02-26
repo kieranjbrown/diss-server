@@ -19,6 +19,11 @@ public class OrQueryFilter implements QueryFilter {
 
     public String getFilters() {
         final List<String> filters = filterList.map(QueryFilter::getFilters);
+        if (filters.length() == 0) {
+            return "";
+        } else if (filters.length() == 1) {
+            return filters.head();
+        }
         return "(" +
                 filters.head() +
                 " OR " +

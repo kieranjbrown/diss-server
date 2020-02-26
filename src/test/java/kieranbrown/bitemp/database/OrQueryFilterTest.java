@@ -4,6 +4,8 @@ import io.vavr.Tuple3;
 import io.vavr.collection.List;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -35,7 +37,19 @@ class OrQueryFilterTest {
     }
 
     @Test
-    void getFilersFormatsCorrectlyForSimpleFilters() {
+    void getFiltersReturnsEmptyStringForNoFilters() {
+        final OrQueryFilter queryFilter = new OrQueryFilter(List.empty());
+        assertThat(queryFilter.getFilters()).isEqualTo("");
+    }
+
+    @Test
+    void getFiltersFormatsCorrectlyForSingleFilter() {
+        final OrQueryFilter queryFilter = new OrQueryFilter(new Tuple3<>("id", QueryEquality.GREATER_THAN_EQUAL_TO, 3));
+        assertThat(queryFilter.getFilters()).isEqualTo("id >= 3");
+    }
+
+    @Test
+    void getFiltersFormatsCorrectlyForSimpleFilters() {
         final List<QueryFilter> filters = List.of(
                 new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3)),
                 new SingleQueryFilter(new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10))
@@ -46,7 +60,7 @@ class OrQueryFilterTest {
     }
 
     @Test
-    void getFilersFormatsCorrectlyForComplexFilters() {
+    void getFiltersFormatsCorrectlyForComplexFilters() {
         final List<QueryFilter> filters = List.of(
                 new AndQueryFilter(
                         new Tuple3<>("id", QueryEquality.EQUALS, 3),
@@ -57,5 +71,10 @@ class OrQueryFilterTest {
 
         final OrQueryFilter queryFilter = new OrQueryFilter(filters);
         assertThat(queryFilter.getFilters()).isNotNull().isEqualTo("((id = 3 AND valid_time_start >= 200) OR version >= 10)");
+    }
+
+    @Test
+    void getFilterEscapesValues() {
+        assertThat(new OrQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, LocalDate.of(2020, 10, 3))).getFilters()).isEqualTo("id = '2020-10-03'");
     }
 }

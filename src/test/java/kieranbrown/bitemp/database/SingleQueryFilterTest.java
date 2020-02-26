@@ -3,6 +3,8 @@ package kieranbrown.bitemp.database;
 import io.vavr.Tuple3;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -32,5 +34,10 @@ class SingleQueryFilterTest {
     void getFilterReturnsAllFilteredCorrectly() {
         assertThat(new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3)).getFilters()).isEqualTo("id = 3");
         assertThat(new SingleQueryFilter("id", QueryEquality.EQUALS, 3).getFilters()).isEqualTo("id = 3");
+    }
+
+    @Test
+    void getFilterEscapesValues() {
+        assertThat(new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, LocalDate.of(2020, 10, 3))).getFilters()).isEqualTo("id = '2020-10-03'");
     }
 }
