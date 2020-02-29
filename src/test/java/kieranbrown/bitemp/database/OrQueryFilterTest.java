@@ -60,6 +60,18 @@ class OrQueryFilterTest {
     }
 
     @Test
+    void getFiltersFormatsCorrectlyForMultipleFilters() {
+        final List<QueryFilter> filters = List.of(
+                new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3)),
+                new SingleQueryFilter(new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10)),
+                new SingleQueryFilter(new Tuple3<>("valid_time_start", QueryEquality.LESS_THAN, LocalDate.of(2020, 10, 20)))
+        );
+
+        final OrQueryFilter queryFilter = new OrQueryFilter(filters);
+        assertThat(queryFilter.getFilters()).isNotNull().isEqualTo("(id = 3 OR version >= 10 OR valid_time_start < '2020-10-20')");
+    }
+
+    @Test
     void getFiltersFormatsCorrectlyForComplexFilters() {
         final List<QueryFilter> filters = List.of(
                 new AndQueryFilter(

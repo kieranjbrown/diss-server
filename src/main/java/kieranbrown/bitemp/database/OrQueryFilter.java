@@ -27,7 +27,7 @@ public class OrQueryFilter implements QueryFilter {
         return "(" +
                 filters.head() +
                 " OR " +
-                filters.tail().reduce((x, y) -> x + " AND " + y) +
+                filters.tail().reduce((x, y) -> x + " OR " + y) +
                 ")";
     }
 }
