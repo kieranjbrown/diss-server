@@ -127,53 +127,6 @@ class QueryTest {
     }
 
     @Test
-    void datesAreFormattedCorrectlyForSQL() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("valid_time_start", QueryEquality.EQUALS, LocalDate.of(2020, 2, 20)))
-        ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where valid_time_start = '2020-02-20'");
-
-        query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("system_time_start", QueryEquality.EQUALS, new Date(2020, 1, 20, 13, 43, 0)))
-        ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where system_time_start = '2020-01-20 13:43:00.000000'");
-
-        query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("system_time_start", QueryEquality.EQUALS, new Date(2020, 1, 20, 0, 0, 0)))
-        ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where system_time_start = '2020-01-20 00:00:00.000000'");
-    }
-
-    @Test
-    void stringIsCorrectlyFormattedForSql() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("stock", QueryEquality.EQUALS, "AMZN"))
-        ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where stock = 'AMZN'");
-    }
-
-    @Test
-    void uuidIsCorrectlyFormatted() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
-        final UUID uuid = UUID.randomUUID();
-        query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, uuid))
-        ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = '" + uuid + "'");
-    }
-
-    @Test
-    void bigDecimalIsCorrectlyFormatted() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFilters(List.of(
-                new SingleQueryFilter(new Tuple3<>("price", QueryEquality.EQUALS, new BigDecimal("123.45")))
-        ));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where price = '123.45'");
-    }
-
-    @Test
     void queryIsBuiltAppropriatelyForDistinctQuery() {
         final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
         query.setFields(HashMap.ofEntries(new Tuple2<>("id", null), new Tuple2<>("version", null)));

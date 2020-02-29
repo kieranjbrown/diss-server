@@ -6,12 +6,14 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNull;
+
 public final class QueryUtils {
     private QueryUtils() {
     }
 
-    //TODO: move tests from QueryTest to separate test class for this
     public static String toString(final Object o) {
+        requireNonNull(o, "input cannot be null");
         if (o.getClass().equals(Date.class)) {
             final Date date = (Date) o;
             return String.format("'%s-%s-%s %s:%s:%s.000000'",
