@@ -7,27 +7,43 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.Validate.isTrue;
 
 @Embeddable
 public class BitemporalKey implements Serializable {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    //TODO: This should probably be valid time start / end? gonna make updates very difficult presumably
-    @Column(name = "version", nullable = false)
-    private int version;
+    @Column(name = "valid_time_start", nullable = false)
+    private LocalDate validTimeStart;
+
+    @Column(name = "valid_time_end", nullable = false)
+    private LocalDate validTimeEnd;
 
     private BitemporalKey() {
     }
 
     private BitemporalKey(final UUID id,
-                          final int version) {
+                          final LocalDate validTimeStart,
+                          final LocalDate validTimeEnd) {
         this.id = id;
-        this.version = version;
+        this.validTimeStart = validTimeStart;
+        this.validTimeEnd = validTimeEnd;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public LocalDate getValidTimeStart() {
+        return validTimeStart;
+    }
+
+    public LocalDate getValidTimeEnd() {
+        return validTimeEnd;
     }
 
     @Override
@@ -39,7 +55,8 @@ public class BitemporalKey implements Serializable {
         BitemporalKey that = (BitemporalKey) o;
 
         return new EqualsBuilder()
-                .append(version, that.version)
+                .append(validTimeStart, that.validTimeStart)
+                .append(validTimeEnd, that.validTimeEnd)
                 .append(id, that.id)
                 .isEquals();
     }
@@ -48,7 +65,8 @@ public class BitemporalKey implements Serializable {
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
                 .append(id)
-                .append(version)
+                .append(validTimeStart)
+                .append(validTimeEnd)
                 .toHashCode();
     }
 
@@ -56,35 +74,33 @@ public class BitemporalKey implements Serializable {
     public String toString() {
         return new ToStringBuilder(this)
                 .append("id", id)
-                .append("version", version)
+                .append("valid_time_start", validTimeStart)
+                .append("valid_time_end", validTimeEnd)
                 .toString();
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     public static class Builder {
         private UUID tradeId;
-        private int version;
+        private LocalDate validTimeStart;
+        private LocalDate validTimeEnd;
 
         public Builder setTradeId(final UUID tradeId) {
             this.tradeId = requireNonNull(tradeId, "id cannot be null");
             return this;
         }
 
-        public Builder setVersion(final int version) {
-            isTrue(version >= 0, "version cannot be negative");
-            this.version = version;
+        public Builder setValidTimeStart(final LocalDate validTimeStart) {
+            this.validTimeStart = requireNonNull(validTimeStart, "validTimeStart cannot be null");
+            return this;
+        }
+
+        public Builder setValidTimeEnd(final LocalDate validTimeEnd) {
+            this.validTimeEnd = requireNonNull(validTimeEnd, "validTimeEnd cannot be null");
             return this;
         }
 
         public BitemporalKey build() {
-            return new BitemporalKey(tradeId, version);
+            return new BitemporalKey(tradeId, validTimeStart, validTimeEnd);
         }
-    }
-
-    public int getVersion() {
-        return version;
     }
 }

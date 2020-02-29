@@ -33,7 +33,6 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         results = Option.none();
         fields = List.of(
                 "id",
-                "version",
                 "valid_time_start",
                 "valid_time_end",
                 "system_time_start",
@@ -62,9 +61,8 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
                 .map(x -> new Tuple2<>(getColumnName(x._1), getFieldValue(x._2, object)))
                 .appendAll(
                         List.of(new Tuple2<>("id", object.getTradeKey().getId()),
-                                new Tuple2<>("version", object.getTradeKey().getVersion()),
-                                new Tuple2<>("valid_time_start", object.getValidTimeStart()),
-                                new Tuple2<>("valid_time_end", object.getValidTimeEnd()),
+                                new Tuple2<>("valid_time_start", object.getTradeKey().getValidTimeStart()),
+                                new Tuple2<>("valid_time_end", object.getTradeKey().getValidTimeEnd()),
                                 new Tuple2<>("system_time_start", object.getSystemTimeStart()),
                                 new Tuple2<>("system_time_end", object.getSystemTimeEnd())))
                 .toList();
@@ -76,15 +74,14 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     private Object getFieldValue(final String fieldName, final T object) {
-        //TODO: tidy this mess
         try {
             final Field declaredField = queryClass.getDeclaredField(fieldName);
             declaredField.setAccessible(true);
             return declaredField.get(object);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
+            throw new RuntimeException(String.format("error retrieving value for field %s", fieldName), e);
         }
-        throw new RuntimeException("error");
     }
 
     private String getColumnName(final Field field) {
@@ -225,6 +222,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     public QueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFields(LinkedHashMap.ofEntries(fields));

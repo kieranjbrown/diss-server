@@ -6,7 +6,6 @@ import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
@@ -14,13 +13,6 @@ import java.time.LocalDateTime;
 public abstract class BitemporalModel<T extends BitemporalModel> {
     @EmbeddedId
     protected BitemporalKey tradeKey;
-
-    //TODO: Should these be wrapped into another class?
-    @Column(nullable = false, name = "valid_time_start")
-    protected LocalDate validTimeStart;
-
-    @Column(name = "valid_time_end")
-    protected LocalDate validTimeEnd;
 
     @Column(name = "system_time_start")
     protected LocalDateTime systemTimeStart;
@@ -32,8 +24,6 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
     public String toString() {
         return new ToStringBuilder(this)
                 .append("tradeKey", tradeKey)
-                .append("validTimeStart", validTimeStart)
-                .append("validTimeEnd", validTimeEnd)
                 .append("systemTimeStart", systemTimeStart)
                 .append("systemTimeEnd", systemTimeEnd)
                 .toString();
@@ -45,24 +35,6 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
 
     public T setTradeKey(final BitemporalKey tradeKey) {
         this.tradeKey = tradeKey;
-        return (T) this;
-    }
-
-    public LocalDate getValidTimeStart() {
-        return LocalDate.from(validTimeStart);
-    }
-
-    public T setValidTimeStart(final LocalDate validTimeStart) {
-        this.validTimeStart = LocalDate.from(validTimeStart);
-        return (T) this;
-    }
-
-    public LocalDate getValidTimeEnd() {
-        return LocalDate.from(validTimeEnd);
-    }
-
-    public T setValidTimeEnd(final LocalDate validTimeEnd) {
-        this.validTimeEnd = LocalDate.from(validTimeEnd);
         return (T) this;
     }
 
@@ -88,9 +60,6 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
     void prePersist() {
         //TODO: there has to be a better way of doing this
         //TODO: is this needed anymore now not using repositories?
-        if (validTimeEnd == null) {
-            validTimeEnd = LocalDate.of(9999, 12, 31);
-        }
         if (systemTimeStart == null) {
             systemTimeStart = LocalDateTime.now();
         }

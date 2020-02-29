@@ -3,7 +3,7 @@ create schema if not exists reporting;
 create table if not exists reporting.trade_data
 (
 id UUID default random_uuid() not null,
-version int not null,
+-- version int not null,
 stock varchar(5) not null,
 price decimal(5,2) not null,
 volume int not null,

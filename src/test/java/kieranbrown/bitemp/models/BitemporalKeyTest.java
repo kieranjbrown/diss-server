@@ -2,6 +2,7 @@ package kieranbrown.bitemp.models;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,20 +12,20 @@ class BitemporalKeyTest {
 
     @Test
     void setTradeIdThrowsForNullId() {
-        final BitemporalKey.Builder builder = new BitemporalKey.Builder()
-                .setTradeId(UUID.randomUUID())
-                .setVersion(2000);
-        assertThat(assertThrows(NullPointerException.class, () -> builder.setTradeId(null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new BitemporalKey.Builder().setTradeId(null)))
                 .hasMessage("id cannot be null");
     }
 
     @Test
-    void setVersionThrowsForInvalidVersion() {
-        final BitemporalKey.Builder builder = new BitemporalKey.Builder()
-                .setTradeId(UUID.randomUUID())
-                .setVersion(2000);
-        assertThat(assertThrows(IllegalArgumentException.class, () -> builder.setVersion(-5000)))
-                .hasMessage("version cannot be negative");
+    void setVersionThrowsForNullValidTimeStart() {
+        assertThat(assertThrows(IllegalArgumentException.class, () -> new BitemporalKey.Builder().setValidTimeStart(null)))
+                .hasMessage("validTimeStart cannot be null");
+    }
+
+    @Test
+    void setVersionThrowsForNullValidTimeEnd() {
+        assertThat(assertThrows(IllegalArgumentException.class, () -> new BitemporalKey.Builder().setValidTimeEnd(null)))
+                .hasMessage("validTimeEnd cannot be null");
     }
 
     @Test
@@ -32,10 +33,12 @@ class BitemporalKeyTest {
         final UUID tradeId = UUID.randomUUID();
         final BitemporalKey key = new BitemporalKey.Builder()
                 .setTradeId(tradeId)
-                .setVersion(2000)
+                .setValidTimeStart(LocalDate.of(2020, 10, 20))
+                .setValidTimeEnd(LocalDate.of(2020, 10, 21))
                 .build();
 
         assertThat(key.getId()).isNotNull().isEqualTo(tradeId);
-        assertThat(key.getVersion()).isEqualTo(2000);
+        assertThat(key.getValidTimeStart()).isEqualTo(LocalDate.of(2020, 10, 20));
+        assertThat(key.getValidTimeEnd()).isEqualTo(LocalDate.of(2020, 10, 21));
     }
 }

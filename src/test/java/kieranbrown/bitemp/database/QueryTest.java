@@ -152,7 +152,6 @@ class QueryTest {
         final UUID tradeId = UUID.randomUUID();
         final Query<Trade> tradeQuery = new Query<>(QueryType.INSERT, Trade.class);
         tradeQuery.setFields(HashMap.ofEntries(
-                new Tuple2<>("version", 3),
                 new Tuple2<>("id", tradeId),
                 new Tuple2<>("stock", "GOOGL"),
                 new Tuple2<>("buy_sell_flag", 'B'),
@@ -166,7 +165,7 @@ class QueryTest {
         ));
 
         assertThat(tradeQuery.build()).isNotNull().isEqualTo("INSERT INTO reporting.trade_data " +
-                "(system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, stock, version, system_time_end, volume, id) VALUES " +
-                "('2020-01-20 03:45:00.000000', 'B', 123.45, '2020-01-21', '2020-01-20', 'M', 'GOOGL', 3, '2020-01-21 03:45:00.000000', 200, '" + tradeId + "')");
+                "(system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, stock, system_time_end, volume, id) VALUES " +
+                "('2020-01-20 03:45:00.000000', 'B', 123.45, '2020-01-21', '2020-01-20', 'M', 'GOOGL', '2020-01-21 03:45:00.000000', 200, '" + tradeId + "')");
     }
 }
