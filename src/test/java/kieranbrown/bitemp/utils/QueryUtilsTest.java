@@ -1,11 +1,10 @@
-package kieranbrown.bitemp.database;
+package kieranbrown.bitemp.utils;
 
-import kieranbrown.bitemp.utils.QueryUtils;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,8 +23,8 @@ class QueryUtilsTest {
         assertThat(QueryUtils.toString(LocalDate.of(2020, 1, 20))).isNotNull().isEqualTo("'2020-01-20'");
         assertThat(QueryUtils.toString(LocalDate.of(2020, 10, 20))).isNotNull().isEqualTo("'2020-10-20'");
 
-        assertThat(QueryUtils.toString(new Date(2020, 1, 20, 13, 43, 0))).isNotNull().isEqualTo("'2020-01-20 13:43:00.000000'");
-        assertThat(QueryUtils.toString(new Date(2020, 1, 20, 0, 0, 0))).isNotNull().isEqualTo("'2020-01-20 00:00:00.000000'");
+        assertThat(QueryUtils.toString(LocalDateTime.of(2020, 1, 20, 13, 43, 0))).isNotNull().isEqualTo("'2020-01-20 13:43:00.000000'");
+        assertThat(QueryUtils.toString(LocalDateTime.of(2020, 1, 20, 0, 0, 10))).isNotNull().isEqualTo("'2020-01-20 00:00:10.000000'");
     }
 
     @Test
