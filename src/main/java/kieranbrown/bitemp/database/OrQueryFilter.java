@@ -17,6 +17,10 @@ public class OrQueryFilter implements QueryFilter {
         this.filterList = requireNonNull(filters, "filters cannot be null");
     }
 
+    public OrQueryFilter(final QueryFilter... filters) {
+        this.filterList = List.of(requireNonNull(filters, "filters cannot be null"));
+    }
+
     public String getFilters() {
         final List<String> filters = filterList.map(QueryFilter::getFilters);
         if (filters.length() == 0) {

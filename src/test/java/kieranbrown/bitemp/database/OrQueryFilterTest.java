@@ -18,6 +18,9 @@ class OrQueryFilterTest {
 
         assertThat(assertThrows(NullPointerException.class, () -> new OrQueryFilter((List<QueryFilter>) null)))
                 .hasMessage("filters cannot be null");
+
+        assertThat(assertThrows(NullPointerException.class, () -> new OrQueryFilter((QueryFilter[]) null)))
+                .hasMessage("filters cannot be null");
     }
 
     @Test
@@ -33,6 +36,12 @@ class OrQueryFilterTest {
                 new OrQueryFilter(
                         new Tuple3<>("id", QueryEquality.EQUALS, 3),
                         new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10))
+        ).hasFieldOrPropertyWithValue("filterList", filters);
+
+        assertThat(
+                new OrQueryFilter(
+                        new SingleQueryFilter("id", QueryEquality.EQUALS, 3),
+                        new SingleQueryFilter("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10))
         ).hasFieldOrPropertyWithValue("filterList", filters);
     }
 

@@ -17,6 +17,9 @@ class AndQueryFilterTest {
 
         assertThat(assertThrows(NullPointerException.class, () -> new AndQueryFilter((List<QueryFilter>) null)))
                 .hasMessage("filters cannot be null");
+
+        assertThat(assertThrows(NullPointerException.class, () -> new AndQueryFilter((QueryFilter[]) null)))
+                .hasMessage("filters cannot be null");
     }
 
     @Test
@@ -32,6 +35,12 @@ class AndQueryFilterTest {
                 new AndQueryFilter(
                         new Tuple3<>("id", QueryEquality.EQUALS, 3),
                         new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10))
+        ).hasFieldOrPropertyWithValue("filterList", filters);
+
+        assertThat(
+                new AndQueryFilter(
+                        new SingleQueryFilter("id", QueryEquality.EQUALS, 3),
+                        new SingleQueryFilter("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10))
         ).hasFieldOrPropertyWithValue("filterList", filters);
     }
 
