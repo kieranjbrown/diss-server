@@ -73,7 +73,6 @@ class Demo {
 
         System.out.println("retrieve all where stock is google");
         QueryBuilder.select(Trade.class)
-                .allFields()
                 .where("stock", EQUALS, "GOOGL")
                 .execute(entityManager)
                 .getResults()
@@ -127,7 +126,6 @@ class Demo {
 
         System.out.println("retrieve all where valid time precedes 20th February");
         QueryBuilder.select(Trade.class)
-                .allFields()
                 .validTimePrecedes(LocalDate.of(2020, 2, 10))
                 .execute(entityManager)
                 .getResults()
@@ -151,7 +149,6 @@ class Demo {
 
         System.out.println("retrieving inserted trade");
         QueryBuilder.select(Trade.class)
-                .allFields()
                 .where("version", EQUALS, 3)
                 .execute(entityManager)
                 .getResults()

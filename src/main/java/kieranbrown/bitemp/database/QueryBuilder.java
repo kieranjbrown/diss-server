@@ -91,16 +91,6 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     //TODO: other types of queries
 
-    //TODO: remove because can only retrieve all the fields
-    public QueryBuilder<T> allFields() {
-        fields = Stream.of(queryClass.getDeclaredFields())
-                .map(this::getColumnName)
-                .insertAll(0, baseFields)
-                .map(x -> new Tuple2<>(x, null))
-                .toList();
-        return this;
-    }
-
     private String getColumnName(final Field field) {
         final String annotationName = field.getAnnotation(Column.class).name();
         return "".equals(annotationName) ? field.getName() : annotationName;

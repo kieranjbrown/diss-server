@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
-import io.vavr.collection.Map;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
 import org.junit.jupiter.api.Nested;
@@ -51,34 +50,7 @@ class QueryBuilderTest {
         }
 
         @Test
-        void allFieldsSetsAllFieldsFromTheSourceObject() {
-            final Map<String, Object> fields = HashMap.ofEntries(
-                    new Tuple2<>("id", null),
-                    new Tuple2<>("version", null),
-                    new Tuple2<>("valid_time_start", null),
-                    new Tuple2<>("valid_time_end", null),
-                    new Tuple2<>("system_time_start", null),
-                    new Tuple2<>("system_time_end", null),
-                    new Tuple2<>("stock", null),
-                    new Tuple2<>("price", null),
-                    new Tuple2<>("volume", null),
-                    new Tuple2<>("buy_sell_flag", null),
-                    new Tuple2<>("market_limit_flag", null)
-            );
-
-            System.out.println("test fields");
-
-            final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
-            queryBuilder.execute(entityManager);
-
-            assertThat(queryBuilder).isNotNull()
-                    .extracting("query")
-                    .extracting("fields")
-                    .isEqualTo(fields);
-        }
-
-        @Test
-        void canEvaluateSingleSelectQueryWithAllFieldsAndReturnResult() {
+        void canEvaluateSingleSelectQueryAndReturnResult() {
             final Trade trade = new Trade().setTradeKey(KEY)
                     .setValidTimeStart(LocalDate.of(2020, 1, 20))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 21))
@@ -91,13 +63,10 @@ class QueryBuilderTest {
                     .setStock("GOOGL");
 
             repository.save(trade);
-            final QueryBuilder queryBuilder = QueryBuilder.selectDistinct(Trade.class).allFields();
-            queryBuilder.execute(entityManager);
-            final List results = queryBuilder.getResults();
-            assertThat(results).isNotNull()
-                    .isNotEmpty();
-
-            assertThat(results.get(0)).usingRecursiveComparison().isEqualTo(trade);
+            assertThat(QueryBuilder.selectDistinct(Trade.class)
+                    .execute(entityManager)
+                    .getResults()
+            ).isNotNull().isNotEmpty().first().usingRecursiveComparison().isEqualTo(trade);
 
             //TODO: finish
         }
@@ -228,7 +197,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .systemTimeBetween(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
@@ -289,7 +258,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .systemTimeFrom(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
@@ -349,7 +318,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .systemTimeAsOf(time)
                     .execute(entityManager)
                     .getResults();
@@ -420,7 +389,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .validTimeContains(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
@@ -481,7 +450,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .validTimeEquals(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
@@ -496,7 +465,6 @@ class QueryBuilderTest {
         @Test
         void validTimePrecedesFilterAffectsResults() {
             final LocalDate startDate = LocalDate.of(2020, 1, 10);
-            final LocalDate endDate = LocalDate.of(2020, 1, 10);
 
             repository.saveAll(ImmutableList.of(
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
@@ -552,7 +520,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .validTimePrecedes(startDate)
                     .execute(entityManager)
                     .getResults();
@@ -567,7 +535,6 @@ class QueryBuilderTest {
         @Test
         void validTimeImmediatelyPrecedesFilterAffectsResults() {
             final LocalDate startDate = LocalDate.of(2020, 1, 10);
-            final LocalDate endDate = LocalDate.of(2020, 1, 10);
 
             repository.saveAll(ImmutableList.of(
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
@@ -613,7 +580,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .validTimeImmediatelyPrecedes(startDate)
                     .execute(entityManager)
                     .getResults();
@@ -674,7 +641,7 @@ class QueryBuilderTest {
             ));
 
             final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
+            final List<Trade> results = queryBuilder
                     .validTimeSucceeds(endDate)
                     .execute(entityManager)
                     .getResults();
@@ -688,7 +655,6 @@ class QueryBuilderTest {
 
         @Test
         void validTimeImmediatelySucceedsFilterAffectsResults() {
-            final LocalDate startDate = LocalDate.of(2020, 1, 10);
             final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
             repository.saveAll(ImmutableList.of(
@@ -734,17 +700,18 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder.allFields()
-                    .validTimeImmediatelySucceeds(endDate)
-                    .execute(entityManager)
-                    .getResults();
-
-            assertThat(results).isNotNull().hasSize(1);
-            results.forEach(x -> {
-                assertThat(x.getValidTimeStart()).isEqualTo(endDate);
-                assertThat(x.getValidTimeEnd()).isAfter(endDate);
-            });
+            assertThat(
+                    QueryBuilder.select(Trade.class)
+                            .validTimeImmediatelySucceeds(endDate)
+                            .execute(entityManager)
+                            .getResults())
+                    .isNotNull()
+                    .hasSize(1)
+                    .first()
+                    .satisfies(x -> {
+                        assertThat(x.getValidTimeStart()).isEqualTo(endDate);
+                        assertThat(x.getValidTimeEnd()).isAfter(endDate);
+                    });
         }
 
         @Test
@@ -895,7 +862,6 @@ class QueryBuilderTest {
                     ImmutableList.of(trade1, trade2, trade3, trade4, trade5, trade6, trade7, trade8, trade9, trade10));
 
             final List<Trade> trades = QueryBuilder.select(Trade.class)
-                    .allFields()
                     .validTimeOverlaps(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
