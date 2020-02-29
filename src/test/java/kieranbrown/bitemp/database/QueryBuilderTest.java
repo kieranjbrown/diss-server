@@ -1,8 +1,6 @@
 package kieranbrown.bitemp.database;
 
 import com.google.common.collect.ImmutableList;
-import io.vavr.Tuple2;
-import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
@@ -75,36 +73,6 @@ class QueryBuilderTest {
         }
 
         @Test
-        void canAddSingleField() {
-            final Trade trade = new Trade().setTradeKey(KEY)
-                    .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                    .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                    .setVolume(200)
-                    .setPrice(new BigDecimal("123.45"))
-                    .setMarketLimitFlag('M')
-                    .setBuySellFlag('B')
-                    .setStock("GOOGL");
-
-            repository.save(trade);
-
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class).addField("stock").execute(entityManager);
-            final List<Trade> results = queryBuilder.getResults();
-            assertThat(results).isNotNull().hasSize(1);
-            assertThat(queryBuilder).extracting("query")
-                    .hasFieldOrPropertyWithValue("fields", HashMap.ofEntries(
-                            new Tuple2<>("id", null),
-                            new Tuple2<>("version", null),
-                            new Tuple2<>("valid_time_start", null),
-                            new Tuple2<>("valid_time_end", null),
-                            new Tuple2<>("system_time_start", null),
-                            new Tuple2<>("system_time_end", null),
-                            new Tuple2<>("stock", null)
-                    ));
-        }
-
-        @Test
         void throwsForNullEntityManager() {
             assertThat(assertThrows(NullPointerException.class, () -> select(Trade.class).execute(null)))
                     .hasMessage("entityManager cannot be null");
@@ -138,15 +106,43 @@ class QueryBuilderTest {
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
                             .setBuySellFlag('B')
+                            .setStock("GOOGL"),
+                    new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                            .setVolume(195)
+                            .setPrice(new BigDecimal("123.45"))
+                            .setMarketLimitFlag('M')
+                            .setBuySellFlag('B')
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> query = select(Trade.class);
-            query.where("version", QueryEquality.EQUALS, 3);
-            query.execute(entityManager);
-            final List<Trade> results = query.getResults();
+            assertThat(
+                    QueryBuilder.select(Trade.class)
+                            .where("version", QueryEquality.EQUALS, 3)
+                            .execute(entityManager)
+                            .getResults())
+                    .isNotNull()
+                    .hasSize(1);
 
-            assertThat(results).isNotNull().hasSize(1);
+            assertThat(
+                    QueryBuilder.select(Trade.class)
+                            .where(new SingleQueryFilter("version", QueryEquality.EQUALS, 3))
+                            .execute(entityManager)
+                            .getResults())
+                    .isNotNull()
+                    .hasSize(1);
+
+            assertThat(
+                    QueryBuilder.select(Trade.class)
+                            .where(new SingleQueryFilter("version", QueryEquality.EQUALS, 4),
+                                    new SingleQueryFilter("volume", QueryEquality.EQUALS, 195))
+                            .execute(entityManager)
+                            .getResults())
+                    .isNotNull()
+                    .hasSize(1);
         }
 
         @Test

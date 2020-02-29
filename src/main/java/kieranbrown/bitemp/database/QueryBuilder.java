@@ -13,7 +13,6 @@ import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryEquality.*;
@@ -22,14 +21,6 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     private final Query<T> query;
     private final Class<T> queryClass;
     private final QueryType queryType;
-
-    private final List<String> baseFields = List.of(
-            "id",
-            "version",
-            "valid_time_start",
-            "valid_time_end",
-            "system_time_start",
-            "system_time_end");
 
     private List<Tuple2<String, Object>> fields;
     private Option<List<T>> results;
@@ -40,7 +31,14 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         this.queryType = queryType;
         this.query = new Query<>(queryType, clazz);
         results = Option.none();
-        fields = baseFields.map(x -> new Tuple2<>(x, null));
+        fields = List.of(
+                "id",
+                "version",
+                "valid_time_start",
+                "valid_time_end",
+                "system_time_start",
+                "system_time_end")
+                .map(x -> new Tuple2<>(x, null));
         filters = List.empty();
     }
 
@@ -52,24 +50,24 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return new QueryBuilder<>(QueryType.SELECT, clazz);
     }
 
+    //TODO: other types of queries
     //TODO: split these out into other classes e.g. InsertQueryBuilder etc?
     public static <S extends BitemporalModel<S>> QueryBuilder<S> insert(final Class<S> clazz) {
         return new QueryBuilder<>(QueryType.INSERT, clazz);
     }
 
     public QueryBuilder<T> from(final T object) {
-        fields = List.of(
-                new Tuple2<>("id", object.getTradeKey().getId()),
-                new Tuple2<>("version", object.getTradeKey().getVersion()),
-                new Tuple2<>("valid_time_start", object.getValidTimeStart()),
-                new Tuple2<>("valid_time_end", object.getValidTimeEnd()),
-                new Tuple2<>("system_time_start", object.getSystemTimeStart()),
-                new Tuple2<>("system_time_end", object.getSystemTimeEnd()));
-
-        fields = fields.appendAll(Stream.of(queryClass.getDeclaredFields())
+        fields = Stream.of(queryClass.getDeclaredFields())
                 .map(x -> new Tuple2<>(x, getFieldName(x)))
                 .map(x -> new Tuple2<>(getColumnName(x._1), getFieldValue(x._2, object)))
-                .collect(Collectors.toList()));
+                .appendAll(
+                        List.of(new Tuple2<>("id", object.getTradeKey().getId()),
+                                new Tuple2<>("version", object.getTradeKey().getVersion()),
+                                new Tuple2<>("valid_time_start", object.getValidTimeStart()),
+                                new Tuple2<>("valid_time_end", object.getValidTimeEnd()),
+                                new Tuple2<>("system_time_start", object.getSystemTimeStart()),
+                                new Tuple2<>("system_time_end", object.getSystemTimeEnd())))
+                .toList();
         return this;
     }
 
@@ -89,16 +87,9 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         throw new RuntimeException("error");
     }
 
-    //TODO: other types of queries
-
     private String getColumnName(final Field field) {
         final String annotationName = field.getAnnotation(Column.class).name();
         return "".equals(annotationName) ? field.getName() : annotationName;
-    }
-
-    public QueryBuilder<T> addField(final String field) {
-        fields = fields.append(new Tuple2<>(field, null));
-        return this;
     }
 
     public QueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
@@ -106,7 +97,15 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    //TODO: where queryFilter method?
+    public QueryBuilder where(final QueryFilter queryFilter) {
+        filters = filters.append(queryFilter);
+        return this;
+    }
+
+    public QueryBuilder where(final QueryFilter... queryFilters) {
+        filters = filters.appendAll(List.of(queryFilters));
+        return this;
+    }
 
     /*
      * SYSTEM TIME METHODS
