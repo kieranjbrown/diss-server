@@ -747,7 +747,6 @@ class QueryBuilderTest {
             });
         }
 
-        //TODO: pending the QueryFilter refactor
         @Test
         void canRetrieveTradesOverlappingValidTimeRange() {
             final LocalDate startDate = LocalDate.of(2020, 1, 15);

@@ -117,7 +117,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     //TODO: make queryFilter class to allow for OR queries, maybe make internals of this class use it it too?
-//    public QueryBuilder<T> where (final SingleQueryFilter queryFilter) {
+//    public QueryBuilder<T> where (final QueryFilter queryFilter) {
 //        return this;
 //    }
 
@@ -214,14 +214,28 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
 
     //x OVERLAPS y
     public QueryBuilder<T> validTimeOverlaps(final LocalDate startDate, final LocalDate endDate) {
-//        filters = filters.appendAll(
-//                List.of(
-//                        new SingleQueryFilter(List.of(
-//                                new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
-//                                new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
-//                        ))
-//                )
-//        );
+        filters = filters.append(
+                new OrQueryFilter(
+                        new AndQueryFilter(
+                                new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
+                                new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                        ),
+                        new AndQueryFilter(
+                                new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
+                                new SingleQueryFilter("valid_time_start", LESS_THAN, endDate),
+                                new SingleQueryFilter("valid_time_end", GREATER_THAN, endDate)
+                        ),
+                        new AndQueryFilter(
+                                new SingleQueryFilter("valid_time_start", LESS_THAN_EQUAL_TO, startDate),
+                                new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, endDate)
+                        ),
+                        new AndQueryFilter(
+                                new SingleQueryFilter("valid_time_start", LESS_THAN_EQUAL_TO, startDate),
+                                new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, startDate),
+                                new SingleQueryFilter("valid_time_start", LESS_THAN, endDate)
+                        )
+                )
+        );
         return this;
     }
 
