@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,8 +159,8 @@ class QueryTest {
                 new Tuple2<>("market_limit_flag", 'M'),
                 new Tuple2<>("price", new BigDecimal("123.45")),
                 new Tuple2<>("volume", 200),
-                new Tuple2<>("system_time_start", new Date(2020, 1, 20, 3, 45, 0)),
-                new Tuple2<>("system_time_end", new Date(2020, 1, 21, 3, 45, 0)),
+                new Tuple2<>("system_time_start", LocalDateTime.of(2020, 1, 20, 3, 45, 0)),
+                new Tuple2<>("system_time_end", LocalDateTime.of(2020, 1, 21, 3, 45, 0)),
                 new Tuple2<>("valid_time_start", LocalDate.of(2020, 1, 20)),
                 new Tuple2<>("valid_time_end", LocalDate.of(2020, 1, 21))
         ));

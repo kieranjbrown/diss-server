@@ -16,7 +16,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static kieranbrown.bitemp.database.QueryBuilder.select;
@@ -54,8 +54,8 @@ class QueryBuilderTest {
             final Trade trade = new Trade().setTradeKey(KEY)
                     .setValidTimeStart(LocalDate.of(2020, 1, 20))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                    .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                     .setVolume(200)
                     .setPrice(new BigDecimal("123.45"))
                     .setMarketLimitFlag('M')
@@ -79,8 +79,8 @@ class QueryBuilderTest {
             final Trade trade = new Trade().setTradeKey(KEY)
                     .setValidTimeStart(LocalDate.of(2020, 1, 20))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                    .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                     .setVolume(200)
                     .setPrice(new BigDecimal("123.45"))
                     .setMarketLimitFlag('M')
@@ -122,8 +122,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -132,8 +132,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -151,17 +151,15 @@ class QueryBuilderTest {
 
         @Test
         void systemTimeBetweenFilterAffectsResults() {
-            //TODO: convert all system dates to ZonedDateTime or something similar: Hibernate takes literal values e.g. 1900+2020,
-            //whereas val.getYear() returns only 2020 so big disparity
-            final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
-            final Date endRange = new Date(2020, 1, 20, 0, 0, 0);
+            final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
+            final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
 
             repository.saveAll(ImmutableList.of(
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -170,8 +168,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 12, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 12, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -180,8 +178,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 20, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -190,8 +188,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -207,22 +205,22 @@ class QueryBuilderTest {
 
             assertThat(results).isNotNull().hasSize(3);
             results.forEach(x -> {
-                assertThat(x.getSystemTimeStart()).isAfterOrEqualTo("2020-01-10 00:00:00.000000");
-                assertThat(x.getSystemTimeEnd()).isBeforeOrEqualTo("2020-01-20 00:00:00.000000");
+                assertThat(x.getSystemTimeStart()).isAfterOrEqualTo(startRange);
+                assertThat(x.getSystemTimeEnd()).isBeforeOrEqualTo(endRange);
             });
         }
 
         @Test
         void systemTimeFromFilterAffectsResults() {
-            final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
-            final Date endRange = new Date(2020, 1, 20, 0, 0, 0);
+            final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
+            final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
 
             repository.saveAll(ImmutableList.of(
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -231,8 +229,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 12, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 12, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -241,8 +239,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 20, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -251,8 +249,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -268,21 +266,21 @@ class QueryBuilderTest {
 
             assertThat(results).isNotNull().hasSize(2);
             results.forEach(x -> {
-                assertThat(x.getSystemTimeStart()).isAfterOrEqualTo("2020-01-10 00:00:00.000000");
-                assertThat(x.getSystemTimeEnd()).isBefore("2020-01-20 00:00:00.000000");
+                assertThat(x.getSystemTimeStart()).isAfterOrEqualTo(startRange);
+                assertThat(x.getSystemTimeEnd()).isBefore(endRange);
             });
         }
 
         @Test
         void systemTimeAsOfFilterAffectsResults() {
-            final Date time = new Date(2020, 1, 10, 0, 0, 0);
+            final LocalDateTime time = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
 
             repository.saveAll(ImmutableList.of(
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -291,8 +289,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -301,8 +299,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -311,8 +309,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -328,8 +326,8 @@ class QueryBuilderTest {
 
             assertThat(results).isNotNull().hasSize(2);
             results.forEach(x -> {
-                assertThat(x.getSystemTimeStart()).isBeforeOrEqualTo("2020-01-10 00:00:00.000000");
-                assertThat(x.getSystemTimeEnd()).isAfter("2020-01-10 00:00:00.000000");
+                assertThat(x.getSystemTimeStart()).isBeforeOrEqualTo(time);
+                assertThat(x.getSystemTimeEnd()).isAfter(time);
             });
         }
 
@@ -342,8 +340,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -352,8 +350,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 15))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -362,8 +360,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -372,8 +370,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 9))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -382,8 +380,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 15))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -413,8 +411,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -423,8 +421,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 15))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -433,8 +431,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -443,8 +441,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 9))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -473,8 +471,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 9))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -483,8 +481,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 8))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 9))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -493,8 +491,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 9))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -503,8 +501,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -513,8 +511,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -543,8 +541,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 9))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -553,8 +551,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 9))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 9))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -563,8 +561,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 7))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 8))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -573,8 +571,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 7))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -604,8 +602,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -614,8 +612,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 19))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -624,8 +622,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 21))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -634,8 +632,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -664,8 +662,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -674,8 +672,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 19))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -684,8 +682,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 21))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -694,8 +692,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 10))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                            .setSystemTimeStart(new Date(120, 0, 19, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 21, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -749,8 +747,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -761,8 +759,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -773,8 +771,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -785,8 +783,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -797,8 +795,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -809,8 +807,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -821,8 +819,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -833,8 +831,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -845,8 +843,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -856,8 +854,8 @@ class QueryBuilderTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 11))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 12));
 
@@ -914,8 +912,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 20))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 11, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -924,8 +922,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 19))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 9, 3, 45, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 13, 3, 45, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -934,8 +932,8 @@ class QueryBuilderTest {
                     new Trade().setTradeKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(4).build())
                             .setValidTimeStart(LocalDate.of(2020, 1, 21))
                             .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                            .setSystemTimeStart(new Date(120, 0, 10, 0, 0, 0))
-                            .setSystemTimeEnd(new Date(120, 0, 10, 0, 0, 0))
+                            .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                            .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
                             .setVolume(200)
                             .setPrice(new BigDecimal("123.45"))
                             .setMarketLimitFlag('M')
@@ -975,8 +973,8 @@ class QueryBuilderTest {
             final Trade trade = new Trade().setTradeKey(key)
                     .setValidTimeStart(LocalDate.of(2020, 1, 20))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                    .setSystemTimeStart(new Date(2020, 1, 20, 3, 45, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 45, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                     .setVolume(200)
                     .setPrice(new BigDecimal("123.45"))
                     .setMarketLimitFlag('M')

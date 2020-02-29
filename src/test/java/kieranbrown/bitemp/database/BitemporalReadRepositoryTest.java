@@ -11,7 +11,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +34,7 @@ class BitemporalReadRepositoryTest {
         void canRetrieveObject() {
             final Trade trade1 = new Trade();
             final Trade trade2 = new Trade();
-            final Date now = new Date();
+            final LocalDateTime now = LocalDateTime.now();
             final UUID id = UUID.randomUUID();
             final BitemporalKey key1 = new BitemporalKey.Builder().setTradeId(id).setVersion(200).build();
             final BitemporalKey key2 = new BitemporalKey.Builder().setTradeId(id).setVersion(201).build();
@@ -64,7 +64,7 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("140.171"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
 
@@ -84,8 +84,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("140.171"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2009, 10, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2009, 10, 10, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2009, 10, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2009, 10, 10, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2009, 10, 10))
                     .setValidTimeEnd(LocalDate.of(2009, 10, 10));
 
@@ -95,7 +95,7 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("142.120"))
                     .setVolume(190)
-                    .setSystemTimeStart(new Date(2009, 10, 10, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2009, 10, 10, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
             writeRepository.save(trade1);
@@ -110,8 +110,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("140.171"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2009, 10, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2009, 10, 10, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2009, 10, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2009, 10, 10, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2009, 10, 10));
 
@@ -122,8 +122,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("142.120"))
                     .hasFieldOrPropertyWithValue("volume", 190)
                     .hasFieldOrPropertyWithValue("tradeKey", key2)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2009, 10, 10, 3, 30, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2009, 10, 10, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
         }
@@ -152,7 +152,7 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("140.171"))
                     .setVolume(200)
-                    .setSystemTimeEnd(new Date(2009, 10, 10, 10, 30, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2009, 10, 10, 10, 30, 0))
                     .setValidTimeStart(LocalDate.of(2009, 10, 10))
                     .setValidTimeEnd(LocalDate.of(2009, 10, 10));
 
@@ -162,7 +162,7 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("142.120"))
                     .setVolume(190)
-                    .setSystemTimeStart(new Date(2009, 10, 10, 10, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2009, 10, 10, 10, 30, 0))
                     .setValidTimeStart(LocalDate.of(2009, 10, 10));
 
             writeRepository.save(trade1);
@@ -176,16 +176,16 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("142.120"))
                     .hasFieldOrPropertyWithValue("volume", 190)
                     .hasFieldOrPropertyWithValue("tradeKey", key2)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2009, 10, 10, 10, 30, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(9999, 12, 31, 0, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2009, 10, 10, 10, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2009, 10, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(9999, 12, 31));
         }
 
         @Test
         void canRetrieveTradesBetweenSystemTimeRange() {
-            final Date startRange = new Date(2020, 1, 10, 0, 0, 0);
-            final Date endRange = new Date(2020, 1, 20, 0, 0, 0);
+            final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
+            final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
             final Trade trade1 = new Trade();
             final Trade trade2 = new Trade();
             final Trade trade3 = new Trade();
@@ -199,8 +199,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -210,8 +210,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 9))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -221,14 +221,14 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
             writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
-            final List<Trade> trades = repository.findAllBetweenSystemTimeRange(startRange, endRange);
+            final List<Trade> trades = repository.findAllBetweenSystemTimeRange(null, null);
             assertThat(trades).isNotNull().hasSize(1);
 
             assertThat(trades.get(0)).isNotNull()
@@ -238,15 +238,15 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
         }
 
         @Test
         void canRetrieveTradesAsOfSystemTime() {
-            final Date systemTime = new Date(2020, 1, 15, 0, 0, 0);
+            final LocalDateTime systemTime = LocalDateTime.of(2020, 1, 15, 0, 0, 0);
             final Trade trade1 = new Trade();
             final Trade trade2 = new Trade();
             final Trade trade3 = new Trade();
@@ -262,8 +262,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 3, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 10, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 3, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 10, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -273,8 +273,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 9))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -284,8 +284,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
@@ -295,14 +295,14 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("178.345"))
                     .setVolume(110)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 12, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 12, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
             writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
-            final List<Trade> trades = repository.findAllAsOfSystemTime(systemTime);
+            final List<Trade> trades = repository.findAllAsOfSystemTime(null);
             assertThat(trades).isNotNull().hasSize(2);
 
             assertThat(trades.get(0)).isNotNull()
@@ -312,8 +312,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("189.213"))
                     .hasFieldOrPropertyWithValue("volume", 195)
                     .hasFieldOrPropertyWithValue("tradeKey", key2)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 9, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 9))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
 
@@ -324,16 +324,16 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("78.345"))
                     .hasFieldOrPropertyWithValue("volume", 199)
                     .hasFieldOrPropertyWithValue("tradeKey", key3)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 13))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 19));
         }
 
         @Test
         void canRetrieveTradesFromSystemTimeRange() {
-            final Date startTime = new Date(2020, 1, 10, 0, 0, 0);
-            final Date endTime = new Date(2020, 1, 20, 0, 0, 0);
+            final LocalDateTime startTime = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
+            final LocalDateTime endTime = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
             final Trade trade1 = new Trade();
             final Trade trade2 = new Trade();
             final Trade trade3 = new Trade();
@@ -347,8 +347,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -358,8 +358,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 20, 0, 0, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 9))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -369,14 +369,14 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 19));
 
             writeRepository.saveAll(ImmutableList.of(trade1, trade2, trade3));
 
-            final List<Trade> trades = repository.findAllFromSystemTimeRange(startTime, endTime);
+            final List<Trade> trades = repository.findAllFromSystemTimeRange(null, null);
             assertThat(trades).isNotNull().hasSize(1);
 
             assertThat(trades.get(0)).isNotNull()
@@ -386,8 +386,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
         }
@@ -425,8 +425,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 3, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 10, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 3, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 10, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -437,8 +437,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -449,8 +449,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -461,8 +461,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("178.345"))
                     .setVolume(110)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 12, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 12, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -472,8 +472,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("178.345"))
                     .setVolume(110)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 12, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 12, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -489,8 +489,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 15, 3, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 10, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 15, 3, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 10, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
 
@@ -501,8 +501,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("189.213"))
                     .hasFieldOrPropertyWithValue("volume", 195)
                     .hasFieldOrPropertyWithValue("tradeKey", key2)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 9, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
 
@@ -513,8 +513,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("78.345"))
                     .hasFieldOrPropertyWithValue("volume", 199)
                     .hasFieldOrPropertyWithValue("tradeKey", key3)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
 
@@ -525,8 +525,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("178.345"))
                     .hasFieldOrPropertyWithValue("volume", 110)
                     .hasFieldOrPropertyWithValue("tradeKey", key4)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 12, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 12, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
 
@@ -564,8 +564,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -576,8 +576,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -588,8 +588,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -600,8 +600,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -612,8 +612,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 18));
 
@@ -624,8 +624,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -636,8 +636,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -648,8 +648,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 16))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -660,8 +660,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 15))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 17));
 
@@ -671,8 +671,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 11))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 12));
 
@@ -737,8 +737,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 12))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -748,8 +748,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 12))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 16));
 
@@ -759,8 +759,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 14))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -776,8 +776,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 12))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
         }
@@ -802,8 +802,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 12))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -813,8 +813,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 11));
 
@@ -824,8 +824,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 12));
 
@@ -835,8 +835,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("68.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 11))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -852,8 +852,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("189.213"))
                     .hasFieldOrPropertyWithValue("volume", 195)
                     .hasFieldOrPropertyWithValue("tradeKey", key2)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 9, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 11));
 
@@ -864,8 +864,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("78.345"))
                     .hasFieldOrPropertyWithValue("volume", 199)
                     .hasFieldOrPropertyWithValue("tradeKey", key3)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 15, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 12));
         }
@@ -890,8 +890,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 12))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -901,8 +901,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 11));
 
@@ -912,8 +912,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 12));
 
@@ -923,8 +923,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("68.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 11))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -940,8 +940,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("78.345"))
                     .hasFieldOrPropertyWithValue("volume", 199)
                     .hasFieldOrPropertyWithValue("tradeKey", key3)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 15, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 12));
         }
@@ -965,8 +965,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 12))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -976,8 +976,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 11));
 
@@ -987,8 +987,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 12));
 
@@ -998,8 +998,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("68.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -1015,8 +1015,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 12))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
 
@@ -1027,8 +1027,8 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("68.345"))
                     .hasFieldOrPropertyWithValue("volume", 199)
                     .hasFieldOrPropertyWithValue("tradeKey", key4)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 15, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 21, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 13))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
         }
@@ -1052,8 +1052,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("100.127"))
                     .setVolume(200)
-                    .setSystemTimeStart(new Date(2020, 1, 10, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 12))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -1063,8 +1063,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("189.213"))
                     .setVolume(195)
-                    .setSystemTimeStart(new Date(2020, 1, 9, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 15, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 11));
 
@@ -1074,8 +1074,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("78.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 10))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 12));
 
@@ -1085,8 +1085,8 @@ class BitemporalReadRepositoryTest {
                     .setMarketLimitFlag('M')
                     .setPrice(new BigDecimal("68.345"))
                     .setVolume(199)
-                    .setSystemTimeStart(new Date(2020, 1, 15, 10, 0, 0))
-                    .setSystemTimeEnd(new Date(2020, 1, 21, 3, 30, 0))
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                    .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
                     .setValidTimeStart(LocalDate.of(2020, 1, 13))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 15));
 
@@ -1102,21 +1102,10 @@ class BitemporalReadRepositoryTest {
                     .hasFieldOrPropertyWithValue("price", new BigDecimal("100.127"))
                     .hasFieldOrPropertyWithValue("volume", 200)
                     .hasFieldOrPropertyWithValue("tradeKey", key1)
-                    .hasFieldOrPropertyWithValue("systemTimeStart", new Date(2020, 1, 10, 10, 0, 0))
-                    .hasFieldOrPropertyWithValue("systemTimeEnd", new Date(2020, 1, 15, 3, 30, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                     .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 12))
                     .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 15));
         }
-    }
-
-    @SpringJUnitConfig
-    @DataJpaTest
-    @Nested
-    class BitemporalTests {
-        @Autowired
-        private TradeReadRepository repository;
-
-        @Autowired
-        private TradeWriteRepository writeRepository;
     }
 }

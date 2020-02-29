@@ -12,7 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -114,7 +114,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * http://cs.unibo.it/~montesi/CBD/Articoli/Temporal%20features%20in%20SQL2011.pdf
      */
 
-    public QueryBuilder<T> systemTimeBetween(final Date startTime, final Date endTime) {
+    public QueryBuilder<T> systemTimeBetween(final LocalDateTime startTime, final LocalDateTime endTime) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime)),
@@ -124,7 +124,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> systemTimeAsOf(final Date time) {
+    public QueryBuilder<T> systemTimeAsOf(final LocalDateTime time) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time)),
@@ -134,7 +134,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> systemTimeFrom(final Date startTime, final Date endTime) {
+    public QueryBuilder<T> systemTimeFrom(final LocalDateTime startTime, final LocalDateTime endTime) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime)),

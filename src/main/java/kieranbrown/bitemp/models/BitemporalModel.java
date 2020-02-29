@@ -7,7 +7,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @MappedSuperclass
 @SuppressWarnings("unchecked")
@@ -23,10 +23,10 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
     protected LocalDate validTimeEnd;
 
     @Column(name = "system_time_start")
-    protected Date systemTimeStart;
+    protected LocalDateTime systemTimeStart;
 
     @Column(name = "system_time_end")
-    protected Date systemTimeEnd;
+    protected LocalDateTime systemTimeEnd;
 
     @Override
     public String toString() {
@@ -66,36 +66,36 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
         return (T) this;
     }
 
-    public Date getSystemTimeStart() {
-        return new Date(systemTimeStart.getTime());
+    public LocalDateTime getSystemTimeStart() {
+        return LocalDateTime.from(systemTimeStart);
     }
 
-    public T setSystemTimeStart(final Date systemTimeStart) {
-        this.systemTimeStart = new Date(systemTimeStart.getTime());
+    public T setSystemTimeStart(final LocalDateTime systemTimeStart) {
+        this.systemTimeStart = LocalDateTime.from(systemTimeStart);
         return (T) this;
     }
 
-    public Date getSystemTimeEnd() {
-        return new Date(systemTimeEnd.getTime());
+    public LocalDateTime getSystemTimeEnd() {
+        return LocalDateTime.from(systemTimeEnd);
     }
 
-    public T setSystemTimeEnd(final Date systemTimeEnd) {
-        this.systemTimeEnd = new Date(systemTimeEnd.getTime());
+    public T setSystemTimeEnd(final LocalDateTime systemTimeEnd) {
+        this.systemTimeEnd = LocalDateTime.from(systemTimeEnd);
         return (T) this;
     }
 
     @PrePersist
     void prePersist() {
         //TODO: there has to be a better way of doing this
-        //TODO: convert these all to LocalDateTime
+        //TODO: is this needed anymore now not using repositories?
         if (validTimeEnd == null) {
             validTimeEnd = LocalDate.of(9999, 12, 31);
         }
         if (systemTimeStart == null) {
-            systemTimeStart = new Date();
+            systemTimeStart = LocalDateTime.now();
         }
         if (systemTimeEnd == null) {
-            systemTimeEnd = new Date(9999, 12, 31, 0, 0, 0);
+            systemTimeEnd = LocalDateTime.of(9999, 12, 31, 0, 0, 0);
         }
     }
 }
