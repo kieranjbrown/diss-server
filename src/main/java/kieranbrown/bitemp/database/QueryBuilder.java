@@ -106,10 +106,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    //TODO: make queryFilter class to allow for OR queries, maybe make internals of this class use it it too?
-//    public QueryBuilder<T> where (final QueryFilter queryFilter) {
-//        return this;
-//    }
+    //TODO: where queryFilter method?
 
     /*
      * SYSTEM TIME METHODS
@@ -233,14 +230,11 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFields(LinkedHashMap.ofEntries(fields));
         query.setFilters(filters);
-        //TODO: needs changing for queries that don't return results
-        //TODO: change to result mapper so can actually choose which fields you want?
         if (queryType.equals(QueryType.SELECT_DISTINCT) || queryType.equals(QueryType.SELECT)) {
             System.out.println(query.build());
             results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
         } else {
             entityManager.createNativeQuery(query.build()).executeUpdate();
-//            results = Option.of
         }
         return this;
     }
@@ -248,6 +242,5 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     public List<T> getResults() {
         return results.getOrElseThrow(
                 () -> new IllegalStateException("call to getResults before executing query"));
-        //TODO: method for single result?
     }
 }

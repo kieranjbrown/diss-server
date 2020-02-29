@@ -8,7 +8,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import static java.util.Objects.requireNonNull;
 
-//TODO: make interface, some contain single filter and some contain AND / OR ?
 public class SingleQueryFilter implements QueryFilter {
     private final Tuple3<String, QueryEquality, Object> filter;
 
@@ -25,7 +24,7 @@ public class SingleQueryFilter implements QueryFilter {
     }
 
     public String getFilters() {
-        //TODO: the format string to SQL method in Query needs to be moved elsewhere, or this method needs moved
+        //TODO: should this return internal filters instead and Query formats?
         return filter.apply((x, y, z) -> String.format("%s %s %s", x, y.getValue(), QueryUtils.toString(z)));
     }
 

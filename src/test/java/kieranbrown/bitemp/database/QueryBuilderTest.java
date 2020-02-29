@@ -63,12 +63,15 @@ class QueryBuilderTest {
                     .setStock("GOOGL");
 
             repository.save(trade);
-            assertThat(QueryBuilder.selectDistinct(Trade.class)
-                    .execute(entityManager)
-                    .getResults()
-            ).isNotNull().isNotEmpty().first().usingRecursiveComparison().isEqualTo(trade);
-
-            //TODO: finish
+            assertThat(
+                    QueryBuilder.selectDistinct(Trade.class)
+                            .execute(entityManager)
+                            .getResults())
+                    .isNotNull()
+                    .isNotEmpty()
+                    .first()
+                    .usingRecursiveComparison()
+                    .isEqualTo(trade);
         }
 
         @Test
