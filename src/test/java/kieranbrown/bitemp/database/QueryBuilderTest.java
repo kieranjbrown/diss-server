@@ -951,12 +951,6 @@ class QueryBuilderTest {
     @Nested
     class insertQueries {
 
-        @Autowired
-        private TradeReadRepository readRepository;
-
-        @Autowired
-        private TradeWriteRepository writeRepository;
-
         @PersistenceContext
         private EntityManager entityManager;
 
@@ -969,7 +963,8 @@ class QueryBuilderTest {
 
         @Test
         void insertFromObjectInsertsObject() {
-            final BitemporalKey key = new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setVersion(3).build();
+            final UUID tradeId = UUID.randomUUID();
+            final BitemporalKey key = new BitemporalKey.Builder().setTradeId(tradeId).setVersion(3).build();
             final Trade trade = new Trade().setTradeKey(key)
                     .setValidTimeStart(LocalDate.of(2020, 1, 20))
                     .setValidTimeEnd(LocalDate.of(2020, 1, 21))
@@ -983,8 +978,15 @@ class QueryBuilderTest {
 
             QueryBuilder.insert(Trade.class).from(trade).execute(entityManager);
 
-            final Trade retrievedTrade = readRepository.getOne(key);
-            assertThat(retrievedTrade).isNotNull().usingRecursiveComparison().isEqualTo(trade);
+            assertThat(
+                    entityManager.createNativeQuery("select * from reporting.trade_data where version = ?1 and id = ?2")
+                            .setParameter(1, 3)
+                            .setParameter(2, tradeId)
+                            .getResultList()
+                            .get(0))
+                    .isNotNull()
+                    .usingRecursiveComparison()
+                    .isEqualTo(trade);
         }
     }
 }
