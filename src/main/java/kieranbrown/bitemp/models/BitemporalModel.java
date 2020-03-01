@@ -12,13 +12,13 @@ import java.time.LocalDateTime;
 @SuppressWarnings("unchecked")
 public abstract class BitemporalModel<T extends BitemporalModel> {
     @EmbeddedId
-    protected BitemporalKey tradeKey;
+    private BitemporalKey tradeKey;
 
     @Column(name = "system_time_start")
-    protected LocalDateTime systemTimeStart;
+    private LocalDateTime systemTimeStart;
 
     @Column(name = "system_time_end")
-    protected LocalDateTime systemTimeEnd;
+    private LocalDateTime systemTimeEnd = LocalDateTime.of(9999, 12, 31, 0, 0, 0);
 
     @Override
     public String toString() {

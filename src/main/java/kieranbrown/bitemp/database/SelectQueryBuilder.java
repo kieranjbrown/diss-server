@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryEquality.*;
 
-public class QueryBuilder<T extends BitemporalModel<T>> {
+public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     private final Query<T> query;
     private final Class<T> queryClass;
     private final QueryType queryType;
@@ -26,7 +26,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     private Option<List<T>> results;
     private List<QueryFilter> filters;
 
-    private QueryBuilder(final QueryType queryType, final Class<T> clazz) {
+    SelectQueryBuilder(final QueryType queryType, final Class<T> clazz) {
         queryClass = clazz;
         this.queryType = queryType;
         this.query = new Query<>(queryType, clazz);
@@ -41,21 +41,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         filters = List.empty();
     }
 
-    public static <S extends BitemporalModel<S>> QueryBuilder<S> selectDistinct(final Class<S> clazz) {
-        return new QueryBuilder<>(QueryType.SELECT_DISTINCT, clazz);
-    }
-
-    public static <S extends BitemporalModel<S>> QueryBuilder<S> select(final Class<S> clazz) {
-        return new QueryBuilder<>(QueryType.SELECT, clazz);
-    }
-
-    //TODO: other types of queries
-    //TODO: split these out into other classes e.g. InsertQueryBuilder etc?
-    public static <S extends BitemporalModel<S>> QueryBuilder<S> insert(final Class<S> clazz) {
-        return new QueryBuilder<>(QueryType.INSERT, clazz);
-    }
-
-    public QueryBuilder<T> from(final T object) {
+    public SelectQueryBuilder<T> from(final T object) {
         fields = Stream.of(queryClass.getDeclaredFields())
                 .map(x -> new Tuple2<>(x, getFieldName(x)))
                 .map(x -> new Tuple2<>(getColumnName(x._1), getFieldValue(x._2, object)))
@@ -89,17 +75,17 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return "".equals(annotationName) ? field.getName() : annotationName;
     }
 
-    public QueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
+    public SelectQueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
         filters = filters.append(new SingleQueryFilter(new Tuple3<>(column, equality, value)));
         return this;
     }
 
-    public QueryBuilder where(final QueryFilter queryFilter) {
+    public SelectQueryBuilder<T> where(final QueryFilter queryFilter) {
         filters = filters.append(queryFilter);
         return this;
     }
 
-    public QueryBuilder where(final QueryFilter... queryFilters) {
+    public SelectQueryBuilder<T> where(final QueryFilter... queryFilters) {
         filters = filters.appendAll(List.of(queryFilters));
         return this;
     }
@@ -110,7 +96,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * http://cs.unibo.it/~montesi/CBD/Articoli/Temporal%20features%20in%20SQL2011.pdf
      */
 
-    public QueryBuilder<T> systemTimeBetween(final LocalDateTime startTime, final LocalDateTime endTime) {
+    public SelectQueryBuilder<T> systemTimeBetween(final LocalDateTime startTime, final LocalDateTime endTime) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime)),
@@ -120,7 +106,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> systemTimeAsOf(final LocalDateTime time) {
+    public SelectQueryBuilder<T> systemTimeAsOf(final LocalDateTime time) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("system_time_start", LESS_THAN_EQUAL_TO, time)),
@@ -130,7 +116,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public QueryBuilder<T> systemTimeFrom(final LocalDateTime startTime, final LocalDateTime endTime) {
+    public SelectQueryBuilder<T> systemTimeFrom(final LocalDateTime startTime, final LocalDateTime endTime) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("system_time_start", GREATER_THAN_EQUAL_TO, startTime)),
@@ -149,7 +135,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
      * */
 
     //CONTAINS x
-    public QueryBuilder<T> validTimeContains(final LocalDate startDate, final LocalDate endDate) {
+    public SelectQueryBuilder<T> validTimeContains(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, startDate)),
@@ -160,7 +146,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     //x EQUALS y
-    public QueryBuilder<T> validTimeEquals(final LocalDate startDate, final LocalDate endDate) {
+    public SelectQueryBuilder<T> validTimeEquals(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.appendAll(
                 List.of(
                         new SingleQueryFilter(new Tuple3<>("valid_time_start", EQUALS, startDate)),
@@ -171,32 +157,32 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     //x PRECEDES Y
-    public QueryBuilder<T> validTimePrecedes(final LocalDate startDate) {
+    public SelectQueryBuilder<T> validTimePrecedes(final LocalDate startDate) {
         //TODO: Should be doing checks here to enforce startDate <= endDate?
         filters = filters.append(new SingleQueryFilter(new Tuple3<>("valid_time_end", LESS_THAN_EQUAL_TO, startDate)));
         return this;
     }
 
     //x IMMEDIATELY PRECEDES y
-    public QueryBuilder<T> validTimeImmediatelyPrecedes(final LocalDate startDate) {
+    public SelectQueryBuilder<T> validTimeImmediatelyPrecedes(final LocalDate startDate) {
         filters = filters.append(new SingleQueryFilter(new Tuple3<>("valid_time_end", EQUALS, startDate)));
         return this;
     }
 
     //x SUCCEEDS y
-    public QueryBuilder<T> validTimeSucceeds(final LocalDate endDate) {
+    public SelectQueryBuilder<T> validTimeSucceeds(final LocalDate endDate) {
         filters = filters.append(new SingleQueryFilter(new Tuple3<>("valid_time_start", GREATER_THAN_EQUAL_TO, endDate)));
         return this;
     }
 
     //x IMMEDIATELY SUCCEEDS y
-    public QueryBuilder<T> validTimeImmediatelySucceeds(final LocalDate endDate) {
+    public SelectQueryBuilder<T> validTimeImmediatelySucceeds(final LocalDate endDate) {
         filters = filters.append(new SingleQueryFilter(new Tuple3<>("valid_time_start", EQUALS, endDate)));
         return this;
     }
 
     //x OVERLAPS y
-    public QueryBuilder<T> validTimeOverlaps(final LocalDate startDate, final LocalDate endDate) {
+    public SelectQueryBuilder<T> validTimeOverlaps(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.append(
                 new OrQueryFilter(
                         new AndQueryFilter(
@@ -223,7 +209,7 @@ public class QueryBuilder<T extends BitemporalModel<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    public QueryBuilder<T> execute(final EntityManager entityManager) {
+    public SelectQueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFields(LinkedHashMap.ofEntries(fields));
         query.setFilters(filters);

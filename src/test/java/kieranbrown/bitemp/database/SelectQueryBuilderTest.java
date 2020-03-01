@@ -17,11 +17,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static kieranbrown.bitemp.database.QueryBuilder.select;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class QueryBuilderTest {
+class SelectQueryBuilderTest {
 
     @SpringJUnitConfig
     @DataJpaTest
@@ -31,20 +30,6 @@ class QueryBuilderTest {
         private TradeWriteRepository repository;
         @PersistenceContext
         private EntityManager entityManager;
-
-        @Test
-        void canCreateQueryForDistinctResult() {
-            assertThat(QueryBuilder.selectDistinct(Trade.class)).isNotNull()
-                    .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT_DISTINCT, Trade.class))
-                    .hasFieldOrPropertyWithValue("queryClass", Trade.class);
-        }
-
-        @Test
-        void canCreateQueryForMultipleResults() {
-            assertThat(QueryBuilder.select(Trade.class)).isNotNull()
-                    .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT, Trade.class))
-                    .hasFieldOrPropertyWithValue("queryClass", Trade.class);
-        }
 
         @Test
         void canEvaluateSingleSelectQueryAndReturnResult() {
@@ -64,7 +49,7 @@ class QueryBuilderTest {
 
             repository.save(trade);
             assertThat(
-                    QueryBuilder.selectDistinct(Trade.class)
+                    QueryBuilderFactory.selectDistinct(Trade.class)
                             .execute(entityManager)
                             .getResults())
                     .isNotNull()
@@ -76,13 +61,13 @@ class QueryBuilderTest {
 
         @Test
         void throwsForNullEntityManager() {
-            assertThat(assertThrows(NullPointerException.class, () -> select(Trade.class).execute(null)))
+            assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.select(Trade.class).execute(null)))
                     .hasMessage("entityManager cannot be null");
         }
 
         @Test
         void throwsIfResultsAreRetrievedBeforeCodeIsExecuted() {
-            assertThat(assertThrows(IllegalStateException.class, () -> select(Trade.class).getResults()))
+            assertThat(assertThrows(IllegalStateException.class, () -> QueryBuilderFactory.select(Trade.class).getResults()))
                     .hasMessage("call to getResults before executing query");
         }
 
@@ -131,7 +116,7 @@ class QueryBuilderTest {
             ));
 
             assertThat(
-                    QueryBuilder.select(Trade.class)
+                    QueryBuilderFactory.select(Trade.class)
                             .where("valid_time_start", QueryEquality.EQUALS, LocalDate.of(2020, 1, 20))
                             .execute(entityManager)
                             .getResults())
@@ -139,7 +124,7 @@ class QueryBuilderTest {
                     .hasSize(1);
 
             assertThat(
-                    QueryBuilder.select(Trade.class)
+                    QueryBuilderFactory.select(Trade.class)
                             .where(new SingleQueryFilter("valid_time_start", QueryEquality.EQUALS, LocalDate.of(2020, 1, 20)))
                             .execute(entityManager)
                             .getResults())
@@ -147,7 +132,7 @@ class QueryBuilderTest {
                     .hasSize(1);
 
             assertThat(
-                    QueryBuilder.select(Trade.class)
+                    QueryBuilderFactory.select(Trade.class)
                             .where(new SingleQueryFilter("stock", QueryEquality.EQUALS, "GOOGL"),
                                     new SingleQueryFilter("volume", QueryEquality.EQUALS, 195))
                             .execute(entityManager)
@@ -216,8 +201,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .systemTimeBetween(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
@@ -289,8 +274,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .systemTimeFrom(startRange, endRange)
                     .execute(entityManager)
                     .getResults();
@@ -361,8 +346,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .systemTimeAsOf(time)
                     .execute(entityManager)
                     .getResults();
@@ -447,8 +432,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .validTimeContains(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
@@ -520,8 +505,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .validTimeEquals(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
@@ -605,8 +590,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .validTimePrecedes(startDate)
                     .execute(entityManager)
                     .getResults();
@@ -677,8 +662,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .validTimeImmediatelyPrecedes(startDate)
                     .execute(entityManager)
                     .getResults();
@@ -749,8 +734,8 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-            final QueryBuilder<Trade> queryBuilder = QueryBuilder.select(Trade.class);
-            final List<Trade> results = queryBuilder
+            final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
+            final List<Trade> results = selectQueryBuilder
                     .validTimeSucceeds(endDate)
                     .execute(entityManager)
                     .getResults();
@@ -822,7 +807,7 @@ class QueryBuilderTest {
             ));
 
             assertThat(
-                    QueryBuilder.select(Trade.class)
+                    QueryBuilderFactory.select(Trade.class)
                             .validTimeImmediatelySucceeds(endDate)
                             .execute(entityManager)
                             .getResults())
@@ -992,7 +977,7 @@ class QueryBuilderTest {
                     )
             );
 
-            final List<Trade> trades = QueryBuilder.select(Trade.class)
+            final List<Trade> trades = QueryBuilderFactory.select(Trade.class)
                     .validTimeOverlaps(startDate, endDate)
                     .execute(entityManager)
                     .getResults();
@@ -1089,7 +1074,7 @@ class QueryBuilderTest {
                             .setStock("GOOGL")
             ));
 
-//            QueryBuilder.selectDistinct(Trade.class).
+//            QueryBuilderFactory.selectDistinct(Trade.class).
             //TODO: finish this
         }
     }
@@ -1098,16 +1083,11 @@ class QueryBuilderTest {
     @SpringJUnitConfig
     @Nested
     class insertQueries {
+        //valid time inserts = validate no overlap, and make sure there's continuity?
+        //system time inserts = update old system time to now (assume they match up)
 
         @PersistenceContext
         private EntityManager entityManager;
-
-        @Test
-        void canCreateQueryForInsert() {
-            assertThat(QueryBuilder.insert(Trade.class)).isNotNull()
-                    .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.INSERT, Trade.class))
-                    .hasFieldOrPropertyWithValue("queryClass", Trade.class);
-        }
 
         @Test
         void insertFromObjectInsertsObject() {
@@ -1126,7 +1106,7 @@ class QueryBuilderTest {
                     .setBuySellFlag('B')
                     .setStock("GOOGL");
 
-            QueryBuilder.insert(Trade.class).from(trade).execute(entityManager);
+            QueryBuilderFactory.insert(Trade.class).from(trade).execute(entityManager);
 
             assertThat(
                     entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2 and id = ?3")
@@ -1138,6 +1118,67 @@ class QueryBuilderTest {
                     .isNotNull()
                     .usingRecursiveComparison()
                     .isEqualTo(trade);
+        }
+
+        @Test
+        void insertFromObjectUpdatesExistingSystemTime() {
+            final LocalDateTime now = LocalDateTime.now();
+            final UUID tradeId = UUID.randomUUID();
+            final Trade trade1 = new Trade().setTradeKey(
+                    new BitemporalKey.Builder()
+                            .setTradeId(tradeId)
+                            .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                            .build())
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                    .setVolume(200)
+                    .setPrice(new BigDecimal("123.45"))
+                    .setMarketLimitFlag('M')
+                    .setBuySellFlag('B')
+                    .setStock("GOOGL");
+
+            final Trade trade2 = new Trade().setTradeKey(
+                    new BitemporalKey.Builder()
+                            .setTradeId(tradeId)
+                            .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                            .setValidTimeEnd(LocalDate.of(2020, 1, 22))
+                            .build())
+                    .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                    .setVolume(200)
+                    .setPrice(new BigDecimal("123.45"))
+                    .setMarketLimitFlag('M')
+                    .setBuySellFlag('B')
+                    .setStock("GOOGL");
+
+            QueryBuilderFactory.insert(Trade.class)
+                    .from(trade1)
+                    .execute(entityManager);
+
+            assertThat(
+                    entityManager.createNativeQuery("select * from reporting.trade_data where id = ?1", Trade.class)
+                            .setParameter(1, tradeId)
+                            .getResultList()
+                            .get(0))
+                    .isNotNull()
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
+
+            QueryBuilderFactory.insert(Trade.class)
+                    .from(trade2)
+                    .execute(entityManager);
+
+            final java.util.List<Trade> results = entityManager.createNativeQuery("select * from reporting.trade_data where id = ?1 order by valid_time_start ASC", Trade.class)
+                    .setParameter(1, tradeId)
+                    .getResultList();
+            assertThat(results).isNotNull().hasSize(2);
+
+            assertThat(results.get(0))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0));
+            assertThat(results.get(0).getSystemTimeEnd()).isBetween(now, now.plusDays(1));
+
+            assertThat(results.get(1))
+                    .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                    .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
         }
     }
 }
