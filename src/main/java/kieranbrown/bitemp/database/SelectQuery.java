@@ -13,7 +13,7 @@ import static io.vavr.API.*;
 import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryType.*;
 
-class Query<T extends BitemporalModel<T>> {
+class SelectQuery<T extends BitemporalModel<T>> {
 
     private final QueryType queryType;
     private final Class<T> queryClass;
@@ -21,7 +21,7 @@ class Query<T extends BitemporalModel<T>> {
     private List<QueryFilter> filters;
     private int limit = -1;
 
-    public Query(final QueryType queryType, final Class<T> clazz) {
+    public SelectQuery(final QueryType queryType, final Class<T> clazz) {
         this.queryType = requireNonNull(queryType, "queryType cannot be null");
         queryClass = requireNonNull(clazz, "class cannot be null");
         fields = HashMap.empty();
@@ -34,12 +34,12 @@ class Query<T extends BitemporalModel<T>> {
 
         if (o == null || getClass() != o.getClass()) return false;
 
-        Query query = (Query) o;
+        SelectQuery selectQuery = (SelectQuery) o;
 
         return new EqualsBuilder()
-                .append(queryType, query.queryType)
-                .append(queryClass, query.queryClass)
-                .append(fields, query.fields)
+                .append(queryType, selectQuery.queryType)
+                .append(queryClass, selectQuery.queryClass)
+                .append(fields, selectQuery.fields)
                 .isEquals();
     }
 

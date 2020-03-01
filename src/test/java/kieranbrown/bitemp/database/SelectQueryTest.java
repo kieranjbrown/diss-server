@@ -16,19 +16,19 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class QueryTest {
+class SelectQueryTest {
     @Test
     void constructorThrowsForInvalidInput() {
-        assertThat(assertThrows(NullPointerException.class, () -> new Query<>(null, Trade.class)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(null, Trade.class)))
                 .hasMessage("queryType cannot be null");
 
-        assertThat(assertThrows(NullPointerException.class, () -> new Query<>(QueryType.SELECT_DISTINCT, null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT_DISTINCT, null)))
                 .hasMessage("class cannot be null");
     }
 
     @Test
     void setFieldsThrowsForNullInput() {
-        assertThat(assertThrows(NullPointerException.class, () -> new Query<>(QueryType.SELECT_DISTINCT, Trade.class).setFields(null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class).setFields(null)))
                 .hasMessage("fields cannot be null");
     }
 
@@ -48,10 +48,10 @@ class QueryTest {
                 new Tuple2<>("market_limit_flag", null)
         );
 
-        final Query query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
-        query.setFields(fields);
+        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class);
+        selectQuery.setFields(fields);
 
-        assertThat(query).hasFieldOrPropertyWithValue("fields", fields);
+        assertThat(selectQuery).hasFieldOrPropertyWithValue("fields", fields);
     }
 
     @Test
@@ -70,10 +70,10 @@ class QueryTest {
                 new Tuple2<>("market_limit_flag", null)
         );
 
-        final Query query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFields(fields);
+        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        selectQuery.setFields(fields);
 
-        final String sql = query.build();
+        final String sql = selectQuery.build();
         assertThat(sql).isEqualTo(
                 "SELECT system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, " +
                         "stock, version, system_time_end, volume, id from reporting.trade_data");
@@ -86,11 +86,11 @@ class QueryTest {
                 new Tuple2<>("version", null)
         );
 
-        final Query query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFields(fields);
-        query.setLimit(3);
+        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        selectQuery.setFields(fields);
+        selectQuery.setLimit(3);
 
-        final String sql = query.build();
+        final String sql = selectQuery.build();
         assertThat(sql).isEqualTo(
                 "SELECT version, id from reporting.trade_data limit 3");
     }
@@ -102,41 +102,41 @@ class QueryTest {
                 new Tuple2<>("version", null)
         );
 
-        final Query query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFields(fields);
+        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        selectQuery.setFields(fields);
 
-        assertThat(query.build()).isEqualTo(
+        assertThat(selectQuery.build()).isEqualTo(
                 "SELECT version, id from reporting.trade_data");
 
-        query.setLimit(-1);
-        assertThat(query.build()).isEqualTo(
+        selectQuery.setLimit(-1);
+        assertThat(selectQuery.build()).isEqualTo(
                 "SELECT version, id from reporting.trade_data");
     }
 
     @Test
     void notSettingFieldsSelectsAllFields() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data");
+        final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        assertThat(selectQuery.build()).isEqualTo("SELECT * from reporting.trade_data");
     }
 
     @Test
     void settingFilterAddsToQuery() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFilters(List.of(new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3))));
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3");
+        final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        selectQuery.setFilters(List.of(new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3))));
+        assertThat(selectQuery.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3");
     }
 
     @Test
     void queryIsBuiltAppropriatelyForDistinctQuery() {
-        final Query<Trade> query = new Query<>(QueryType.SELECT_DISTINCT, Trade.class);
-        query.setFields(HashMap.ofEntries(new Tuple2<>("id", null), new Tuple2<>("version", null)));
-        assertThat(query.build()).isNotNull().isEqualTo("SELECT DISTINCT version, id from reporting.trade_data");
+        final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class);
+        selectQuery.setFields(HashMap.ofEntries(new Tuple2<>("id", null), new Tuple2<>("version", null)));
+        assertThat(selectQuery.build()).isNotNull().isEqualTo("SELECT DISTINCT version, id from reporting.trade_data");
     }
 
     @Test
     void canBuildQueryWithOrFilter() {
-        final Query query = new Query<>(QueryType.SELECT, Trade.class);
-        query.setFilters(List.of(
+        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        selectQuery.setFilters(List.of(
                 new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3)),
                 new OrQueryFilter(
                         new Tuple3<>("version", QueryEquality.GREATER_THAN_EQUAL_TO, 10),
@@ -144,14 +144,14 @@ class QueryTest {
                 )
         ));
 
-        assertThat(query.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3 and (version >= 10 OR version <= -10)");
+        assertThat(selectQuery.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3 and (version >= 10 OR version <= -10)");
     }
 
     @Test
     void canBuildInsertQuery() {
         final UUID tradeId = UUID.randomUUID();
-        final Query<Trade> tradeQuery = new Query<>(QueryType.INSERT, Trade.class);
-        tradeQuery.setFields(HashMap.ofEntries(
+        final SelectQuery<Trade> tradeSelectQuery = new SelectQuery<>(QueryType.INSERT, Trade.class);
+        tradeSelectQuery.setFields(HashMap.ofEntries(
                 new Tuple2<>("id", tradeId),
                 new Tuple2<>("stock", "GOOGL"),
                 new Tuple2<>("buy_sell_flag", 'B'),
@@ -164,7 +164,7 @@ class QueryTest {
                 new Tuple2<>("valid_time_end", LocalDate.of(2020, 1, 21))
         ));
 
-        assertThat(tradeQuery.build()).isNotNull().isEqualTo("INSERT INTO reporting.trade_data " +
+        assertThat(tradeSelectQuery.build()).isNotNull().isEqualTo("INSERT INTO reporting.trade_data " +
                 "(system_time_start, buy_sell_flag, price, valid_time_end, valid_time_start, market_limit_flag, stock, system_time_end, volume, id) VALUES " +
                 "('2020-01-20 03:45:00.000000', 'B', 123.45, '2020-01-21', '2020-01-20', 'M', 'GOOGL', '2020-01-21 03:45:00.000000', 200, '" + tradeId + "')");
     }

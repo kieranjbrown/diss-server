@@ -10,7 +10,7 @@ class QueryBuilderFactoryTest {
     @Test
     void canCreateQueryForDistinctResult() {
         assertThat(QueryBuilderFactory.selectDistinct(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT_DISTINCT, Trade.class))
+                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 
@@ -23,7 +23,7 @@ class QueryBuilderFactoryTest {
     @Test
     void canCreateQueryForMultipleResults() {
         assertThat(QueryBuilderFactory.select(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.SELECT, Trade.class))
+                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.SELECT, Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 
@@ -36,7 +36,7 @@ class QueryBuilderFactoryTest {
     @Test
     void canCreateQueryForInsert() {
         assertThat(QueryBuilderFactory.insert(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new Query<>(QueryType.INSERT, Trade.class))
+                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.INSERT, Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 
