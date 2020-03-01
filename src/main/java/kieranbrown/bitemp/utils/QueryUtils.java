@@ -6,14 +6,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import static java.util.Objects.requireNonNull;
-
 public final class QueryUtils {
     private QueryUtils() {
     }
 
     public static String toString(final Object o) {
-        requireNonNull(o, "input cannot be null");
+//        if (o == null) return "null";
         if (o.getClass().equals(LocalDateTime.class)) {
             final LocalDateTime date = (LocalDateTime) o;
             return String.format("'%s-%s-%s %s:%s:%s.000000'",

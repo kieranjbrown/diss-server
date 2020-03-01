@@ -58,8 +58,9 @@ class SelectQuery<T extends BitemporalModel<T>> {
     /*
      * -1 sets no limit
      */
-    public void setLimit(final int limit) {
+    public SelectQuery<T> setLimit(final int limit) {
         this.limit = limit;
+        return this;
     }
 
     public String build() {
@@ -109,16 +110,18 @@ class SelectQuery<T extends BitemporalModel<T>> {
         return fields.values().map(QueryUtils::toString).reduce((x, y) -> x + ", " + y);
     }
 
-    public void setFields(final Map<String, Object> fields) {
+    public SelectQuery<T> setFields(final Map<String, Object> fields) {
         this.fields = requireNonNull(fields, "fields cannot be null");
+        return this;
     }
 
     private String getTableName() {
         return queryClass.getAnnotation(Entity.class).name();
     }
 
-    public void setFilters(final List<QueryFilter> filters) {
+    public SelectQuery<T> setFilters(final List<QueryFilter> filters) {
         this.filters = filters;
+        return this;
     }
 
     private String getLimit() {
