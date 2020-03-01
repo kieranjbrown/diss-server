@@ -2,15 +2,11 @@ package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple2;
 import io.vavr.Tuple3;
-import io.vavr.collection.LinkedHashMap;
 import io.vavr.collection.List;
-import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import kieranbrown.bitemp.models.BitemporalModel;
 
-import javax.persistence.Column;
 import javax.persistence.EntityManager;
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -18,18 +14,17 @@ import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryEquality.*;
 
 public class SelectQueryBuilder<T extends BitemporalModel<T>> {
-    private final Query<T> query;
+    private final SelectQuery<T> selectQuery;
     private final Class<T> queryClass;
-    private final QueryType queryType;
 
     private List<Tuple2<String, Object>> fields;
     private Option<List<T>> results;
     private List<QueryFilter> filters;
 
+    //TODO: is queryType needed anymore?
     SelectQueryBuilder(final QueryType queryType, final Class<T> clazz) {
         queryClass = clazz;
-        this.queryType = queryType;
-        this.query = new Query<>(queryType, clazz);
+        this.selectQuery = new SelectQuery<>(queryType, clazz);
         results = Option.none();
         fields = List.of(
                 "id",
@@ -39,40 +34,6 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
                 "system_time_end")
                 .map(x -> new Tuple2<>(x, null));
         filters = List.empty();
-    }
-
-    public SelectQueryBuilder<T> from(final T object) {
-        fields = Stream.of(queryClass.getDeclaredFields())
-                .map(x -> new Tuple2<>(x, getFieldName(x)))
-                .map(x -> new Tuple2<>(getColumnName(x._1), getFieldValue(x._2, object)))
-                .appendAll(
-                        List.of(new Tuple2<>("id", object.getTradeKey().getId()),
-                                new Tuple2<>("valid_time_start", object.getTradeKey().getValidTimeStart()),
-                                new Tuple2<>("valid_time_end", object.getTradeKey().getValidTimeEnd()),
-                                new Tuple2<>("system_time_start", object.getSystemTimeStart()),
-                                new Tuple2<>("system_time_end", object.getSystemTimeEnd())))
-                .toList();
-        return this;
-    }
-
-    private String getFieldName(final Field field) {
-        return field.getName();
-    }
-
-    private Object getFieldValue(final String fieldName, final T object) {
-        try {
-            final Field declaredField = queryClass.getDeclaredField(fieldName);
-            declaredField.setAccessible(true);
-            return declaredField.get(object);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-            throw new RuntimeException(String.format("error retrieving value for field %s", fieldName), e);
-        }
-    }
-
-    private String getColumnName(final Field field) {
-        final String annotationName = field.getAnnotation(Column.class).name();
-        return "".equals(annotationName) ? field.getName() : annotationName;
     }
 
     public SelectQueryBuilder<T> where(final String column, final QueryEquality equality, final Object value) {
@@ -208,17 +169,13 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
+    //TODO: change to DataSource / JdbcTemplate? could be autowired in the Factory so user doesn't have to pass it
     @SuppressWarnings("unchecked")
     public SelectQueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
-        query.setFields(LinkedHashMap.ofEntries(fields));
-        query.setFilters(filters);
-        if (queryType.equals(QueryType.SELECT_DISTINCT) || queryType.equals(QueryType.SELECT)) {
-            System.out.println(query.build());
-            results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
-        } else {
-            entityManager.createNativeQuery(query.build()).executeUpdate();
-        }
+        selectQuery.setFilters(filters);
+        System.out.println(selectQuery.build());
+        results = Option.of(List.ofAll(entityManager.createNativeQuery(selectQuery.build(), queryClass).getResultList()));
         return this;
     }
 

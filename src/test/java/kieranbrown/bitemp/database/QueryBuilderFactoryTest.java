@@ -36,7 +36,6 @@ class QueryBuilderFactoryTest {
     @Test
     void canCreateQueryForInsert() {
         assertThat(QueryBuilderFactory.insert(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.INSERT, Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 
