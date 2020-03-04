@@ -32,7 +32,8 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public InsertQueryBuilder<T> fromAll(final T... objects) {
+    @SafeVarargs
+    public final InsertQueryBuilder<T> fromAll(final T... objects) {
         this.objects = this.objects.appendAll(Arrays.asList(objects));
         return this;
     }

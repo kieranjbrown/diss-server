@@ -21,4 +21,8 @@ public final class QueryBuilderFactory {
     public static <S extends BitemporalModel<S>> InsertQueryBuilder<S> insert(final Class<S> clazz) {
         return new InsertQueryBuilder<>(requireNonNull(clazz, "class cannot be null"));
     }
+
+    public static <S extends BitemporalModel<S>> UpdateQueryBuilder<S> update(final Class<S> clazz) {
+        return new UpdateQueryBuilder<>(requireNonNull(clazz, "class cannot be null"));
+    }
 }

@@ -16,7 +16,7 @@ import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryEquality.*;
 
 public class SelectQueryBuilder<T extends BitemporalModel<T>> {
-    private final SelectQuery<T> selectQuery;
+    private final SelectQuery<T> query;
     private final Class<T> queryClass;
 
     private List<Tuple2<String, Object>> fields;
@@ -26,7 +26,7 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     //TODO: is queryType needed anymore?
     SelectQueryBuilder(final QueryType queryType, final Class<T> clazz) {
         queryClass = clazz;
-        this.selectQuery = new SelectQuery<>(queryType, clazz);
+        this.query = new SelectQuery<>(queryType, clazz);
         results = Option.none();
         fields = List.of(
                 "id",
@@ -176,9 +176,9 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     public SelectQueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
         getDataSource(entityManager);
-        selectQuery.setFilters(filters);
-        System.out.println(selectQuery.build());
-        results = Option.of(List.ofAll(entityManager.createNativeQuery(selectQuery.build(), queryClass).getResultList()));
+        query.setFilters(filters);
+        System.out.println(query.build());
+        results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
         return this;
     }
 

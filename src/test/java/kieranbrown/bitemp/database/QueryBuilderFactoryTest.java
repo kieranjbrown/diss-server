@@ -44,4 +44,15 @@ class QueryBuilderFactoryTest {
         assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.insert(null)))
                 .hasMessage("class cannot be null");
     }
+
+    @Test
+    void canCreateUpdateQueryBuilder() {
+        assertThat(QueryBuilderFactory.update(Trade.class)).isNotNull();
+    }
+
+    @Test
+    void updateThrowsForNullInput() {
+        assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.update(null)))
+                .hasMessage("class cannot be null");
+    }
 }
