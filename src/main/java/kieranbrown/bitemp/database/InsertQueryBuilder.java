@@ -5,9 +5,11 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import kieranbrown.bitemp.models.BitemporalModel;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.Column;
 import javax.persistence.EntityManager;
+import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -45,7 +47,8 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public InsertQueryBuilder<T> execute(final DataSource dataSource) {
+    public InsertQueryBuilder<T> execute(final DataSource dataSource,
+                                         final EntityManager entityManager) throws OverlappingKeyException {
         final List<List<Tuple2<String, Object>>> map = objects.map(o -> {
             return List.of(queryClass.getDeclaredFields())
                     .map(x -> new Tuple2<>(x, getFieldName(x)))
@@ -60,17 +63,24 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
                 .toList();
 
         final T object = objects.get(0);
-        final Integer rowCount = new JdbcTemplate(dataSource).queryForObject(selectQuery
+        if (new JdbcTemplate(dataSource).queryForObject(selectQuery
                 .setFields(HashMap.of("count(*)", null))
                 .setFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getTradeKey().getId())))
-                .build(), Integer.class);
-        if (rowCount > 0) {
+                .build(), Integer.class) > 0) {
             //update old ones end date
-            System.out.println("need to update old row");
-            new JdbcTemplate(dataSource).execute(new UpdateQuery<>(queryClass).addFields(List.of(new Tuple2<>("system_time_end", LocalDateTime.now())))
-                    .addFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getTradeKey().getId())))
-                    .build());
+            new JdbcTemplate(dataSource).execute(
+                    new UpdateQuery<>(queryClass).addFields(List.of(new Tuple2<>("system_time_end", LocalDateTime.now())))
+                            .addFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getTradeKey().getId())))
+                            .build());
         }
+        if (new SelectQueryBuilder<>(QueryType.SELECT, queryClass)
+                .validTimeOverlaps(object.getTradeKey().getValidTimeStart(), object.getTradeKey().getValidTimeEnd())
+                .execute(entityManager)
+                .getResults()
+                .length() > 0) {
+            throw new OverlappingKeyException(String.format("overlapping valid time for id = '%s'", object.getTradeKey().getId()));
+        }
+
         query.addFields(map);
         new JdbcTemplate(dataSource).execute(query.build());
         return this;

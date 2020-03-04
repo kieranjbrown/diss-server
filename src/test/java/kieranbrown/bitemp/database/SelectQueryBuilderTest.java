@@ -1,6 +1,5 @@
 package kieranbrown.bitemp.database;
 
-import com.google.common.collect.ImmutableList;
 import io.vavr.collection.List;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
@@ -11,6 +10,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,13 +22,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DataJpaTest
 @SpringJUnitConfig
 class SelectQueryBuilderTest {
-    @Autowired
-    private TradeWriteRepository repository;
     @PersistenceContext
     private EntityManager entityManager;
+    @Autowired
+    private DataSource dataSource;
 
     @Test
-    void canEvaluateSingleSelectQueryAndReturnResult() {
+    void canEvaluateSingleSelectQueryAndReturnResult() throws OverlappingKeyException {
         final Trade trade = new Trade().setTradeKey(
                 new BitemporalKey.Builder()
                         .setTradeId(UUID.randomUUID())
@@ -43,7 +43,10 @@ class SelectQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
-        repository.save(trade);
+        QueryBuilderFactory.insert(Trade.class)
+                .from(trade)
+                .execute(dataSource, entityManager);
+
         assertThat(
                 QueryBuilderFactory.selectDistinct(Trade.class)
                         .execute(entityManager)
@@ -56,60 +59,56 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void throwsForNullEntityManager() {
-        assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.select(Trade.class).execute(null)))
-                .hasMessage("entityManager cannot be null");
-    }
-
-    @Test
     void throwsIfResultsAreRetrievedBeforeCodeIsExecuted() {
         assertThat(assertThrows(IllegalStateException.class, () -> QueryBuilderFactory.select(Trade.class).getResults()))
                 .hasMessage("call to getResults before executing query");
     }
 
     @Test
-    void settingFilterAffectsQuery() {
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 21))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 22))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 22))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 23))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(195)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+    void settingFilterAffectsQuery() throws OverlappingKeyException {
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 22))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 22))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 23))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(195)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         assertThat(
                 QueryBuilderFactory.select(Trade.class)
@@ -138,64 +137,66 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void systemTimeBetweenFilterAffectsResults() {
+    void systemTimeBetweenFilterAffectsResults() throws OverlappingKeyException {
         final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
         final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 12, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 12, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -211,64 +212,66 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void systemTimeFromFilterAffectsResults() {
+    void systemTimeFromFilterAffectsResults() throws OverlappingKeyException {
         final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
         final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 12, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 12, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 20, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -284,63 +287,65 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void systemTimeAsOfFilterAffectsResults() {
+    void systemTimeAsOfFilterAffectsResults() throws OverlappingKeyException {
         final LocalDateTime time = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -356,77 +361,79 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeContainsFilterAffectsResults() {
+    void validTimeContainsFilterAffectsResults() throws OverlappingKeyException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 15))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 10))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 15))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -442,64 +449,66 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeEqualsFilterAffectsResults() {
+    void validTimeEqualsFilterAffectsResults() throws OverlappingKeyException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 15))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 15))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 15))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -515,76 +524,78 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimePrecedesFilterAffectsResults() {
+    void validTimePrecedesFilterAffectsResults() throws OverlappingKeyException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 8))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 9))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 10))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 8))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 9))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 11))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 11))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 10))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -600,63 +611,65 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeImmediatelyPrecedesFilterAffectsResults() {
+    void validTimeImmediatelyPrecedesFilterAffectsResults() throws OverlappingKeyException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 10))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 9))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 9))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 7))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 8))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 7))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 10))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 9))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 9))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 7))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 8))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 7))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 11))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -672,63 +685,65 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeSucceedsFilterAffectsResults() {
+    void validTimeSucceedsFilterAffectsResults() throws OverlappingKeyException {
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 19))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 21))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 19))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 11))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -744,63 +759,65 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeImmediatelySucceedsFilterAffectsResults() {
+    void validTimeImmediatelySucceedsFilterAffectsResults() throws OverlappingKeyException {
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 19))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 21))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 11))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 19))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 11))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 19, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
         assertThat(
                 QueryBuilderFactory.select(Trade.class)
@@ -817,161 +834,163 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void canRetrieveTradesOverlappingValidTimeRange() {
+    void canRetrieveTradesOverlappingValidTimeRange() throws OverlappingKeyException {
         final LocalDate startDate = LocalDate.of(2020, 1, 15);
         final LocalDate endDate = LocalDate.of(2020, 1, 17);
 
-        repository.saveAll(ImmutableList.of(
-                //x overlaps y
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 14))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 16))
-                                .build())
-                        .setStock("GOOGL")
-                        .setBuySellFlag('B')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("100.127"))
-                        .setVolume(200)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        //x overlaps y
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 16))
+                                        .build())
+                                .setStock("GOOGL")
+                                .setBuySellFlag('B')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("100.127"))
+                                .setVolume(200)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
 
-                //y overlaps x
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 16))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 18))
-                                .build())
-                        .setStock("AAPL")
-                        .setBuySellFlag('B')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("189.213"))
-                        .setVolume(195)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
+                        //y overlaps x
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 18))
+                                        .build())
+                                .setStock("AAPL")
+                                .setBuySellFlag('B')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("189.213"))
+                                .setVolume(195)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
 
-                //y validTimeContains x
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 16))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 16))
-                                .build())
-                        .setStock("MSFT")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //y validTimeContains x
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 16))
+                                        .build())
+                                .setStock("MSFT")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                //x validTimeContains y
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 14))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 18))
-                                .build())
-                        .setStock("NVDA")
-                        .setBuySellFlag('B')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //x validTimeContains y
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 18))
+                                        .build())
+                                .setStock("NVDA")
+                                .setBuySellFlag('B')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                //x starts y
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 18))
-                                .build())
-                        .setStock("EBAY")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //x starts y
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 18))
+                                        .build())
+                                .setStock("EBAY")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                //x finishes y
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 14))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 17))
-                                .build())
-                        .setStock("FB")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //x finishes y
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 17))
+                                        .build())
+                                .setStock("FB")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                //y starts x
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 16))
-                                .build())
-                        .setStock("AMD")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //y starts x
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 16))
+                                        .build())
+                                .setStock("AMD")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                //y finishes x
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 16))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 17))
-                                .build())
-                        .setStock("GSK")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //y finishes x
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 16))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 17))
+                                        .build())
+                                .setStock("GSK")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                //x equals y
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 15))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 17))
-                                .build())
-                        .setStock("AMZN")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
+                        //x equals y
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 15))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 17))
+                                        .build())
+                                .setStock("AMZN")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0)),
 
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 11))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 12))
-                                .build())
-                        .setStock("TSLA")
-                        .setBuySellFlag('S')
-                        .setMarketLimitFlag('M')
-                        .setPrice(new BigDecimal("78.345"))
-                        .setVolume(199)
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 11))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 12))
+                                        .build())
+                                .setStock("TSLA")
+                                .setBuySellFlag('S')
+                                .setMarketLimitFlag('M')
+                                .setPrice(new BigDecimal("78.345"))
+                                .setVolume(199)
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 15, 10, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 30, 0))
+                        )
                 )
-        );
+                .execute(dataSource, entityManager);
 
         final List<Trade> trades = QueryBuilderFactory.select(Trade.class)
                 .validTimeOverlaps(startDate, endDate)
@@ -1027,48 +1046,50 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void canCreateDistinctQuery() {
-        repository.saveAll(ImmutableList.of(
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 19))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL"),
-                new Trade().setTradeKey(
-                        new BitemporalKey.Builder()
-                                .setTradeId(UUID.randomUUID())
-                                .setValidTimeStart(LocalDate.of(2020, 1, 21))
-                                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                .build())
-                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                        .setVolume(200)
-                        .setPrice(new BigDecimal("123.45"))
-                        .setMarketLimitFlag('M')
-                        .setBuySellFlag('B')
-                        .setStock("GOOGL")
-        ));
+    void canCreateDistinctQuery() throws OverlappingKeyException {
+        QueryBuilderFactory.insert(Trade.class)
+                .fromAll(List.of(
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 19))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL"),
+                        new Trade().setTradeKey(
+                                new BitemporalKey.Builder()
+                                        .setTradeId(UUID.randomUUID())
+                                        .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                                        .build())
+                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
+                                .setVolume(200)
+                                .setPrice(new BigDecimal("123.45"))
+                                .setMarketLimitFlag('M')
+                                .setBuySellFlag('B')
+                                .setStock("GOOGL")
+                ))
+                .execute(dataSource, entityManager);
 
 //            QueryBuilderFactory.selectDistinct(Trade.class).
         //TODO: finish this

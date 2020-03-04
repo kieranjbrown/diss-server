@@ -5,8 +5,10 @@ import io.vavr.Tuple3;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
 import kieranbrown.bitemp.models.BitemporalModel;
+import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 
 import javax.persistence.EntityManager;
+import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -173,10 +175,16 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     @SuppressWarnings("unchecked")
     public SelectQueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
+        getDataSource(entityManager);
         selectQuery.setFilters(filters);
         System.out.println(selectQuery.build());
         results = Option.of(List.ofAll(entityManager.createNativeQuery(selectQuery.build(), queryClass).getResultList()));
         return this;
+    }
+
+    //TODO: use this in insert!!
+    private DataSource getDataSource(EntityManager entityManager) {
+        return ((EntityManagerFactoryInfo) entityManager.getEntityManagerFactory()).getDataSource();
     }
 
     public List<T> getResults() {
