@@ -1,5 +1,6 @@
 package kieranbrown.bitemp.database;
 
+import io.vavr.collection.Stream;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
 @SpringJUnitConfig
@@ -42,7 +44,7 @@ class InsertQueryBuilderTest {
     }
 
     @Test
-    void insertFromObjectInsertsObject() {
+    void insertFromObjectInsertsObject() throws OverlappingKeyException {
         final UUID tradeId = UUID.randomUUID();
         final BitemporalKey key = new BitemporalKey.Builder()
                 .setTradeId(tradeId)
@@ -73,7 +75,58 @@ class InsertQueryBuilderTest {
     }
 
     @Test
-    void insertFromObjectUpdatesExistingSystemTime() {
+    void canInsertMultipleObjectsAtOnce() throws OverlappingKeyException {
+        final Trade trade1 = new Trade().setTradeKey(new BitemporalKey.Builder()
+                .setTradeId(UUID.randomUUID())
+                .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("GOOGL");
+
+        final Trade trade2 = new Trade().setTradeKey(new BitemporalKey.Builder()
+                .setTradeId(UUID.randomUUID())
+                .setValidTimeStart(LocalDate.of(2020, 1, 20))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("GOOGL");
+
+        QueryBuilderFactory.insert(Trade.class).fromAll(trade1, trade2).execute(dataSource);
+        assertTradesAreEqual(trade1, trade2);
+
+        QueryBuilderFactory.insert(Trade.class).fromAll(io.vavr.collection.List.of(trade1, trade2)).execute(dataSource);
+        assertTradesAreEqual(trade1, trade2);
+
+        QueryBuilderFactory.insert(Trade.class).fromAll(Stream.of(trade1, trade2)).execute(dataSource);
+        assertTradesAreEqual(trade1, trade2);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assertTradesAreEqual(final Trade trade1, final Trade trade2) {
+        final List<Trade> arrayResults = entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2")
+                .setParameter(1, LocalDate.of(2020, 1, 20))
+                .setParameter(2, LocalDate.of(2020, 1, 21))
+                .getResultList();
+        assertThat(arrayResults).isNotNull().hasSize(2);
+        assertThat(arrayResults.get(0)).usingRecursiveComparison().isEqualTo(trade1);
+        assertThat(arrayResults.get(1)).usingRecursiveComparison().isEqualTo(trade2);
+
+        entityManager.createNativeQuery("delete from reporting.trade_data").executeUpdate();
+    }
+
+    @Test
+    void insertFromObjectUpdatesExistingSystemTime() throws OverlappingKeyException {
         final LocalDateTime now = LocalDateTime.now();
         final UUID tradeId = UUID.randomUUID();
         final Trade trade1 = new Trade().setTradeKey(
@@ -129,5 +182,44 @@ class InsertQueryBuilderTest {
         assertThat(results.get(1))
                 .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
+    }
+
+    @Test
+    void insertFromObjectThrowsForOverlappingValidTime() throws OverlappingKeyException {
+        final UUID tradeId = UUID.randomUUID();
+        final Trade trade1 = new Trade().setTradeKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("GOOGL");
+
+        final Trade trade2 = new Trade().setTradeKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 19))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("GOOGL");
+
+        QueryBuilderFactory.insert(Trade.class)
+                .from(trade1)
+                .execute(dataSource);
+
+        assertThat(assertThrows(OverlappingKeyException.class, () -> QueryBuilderFactory.insert(Trade.class)
+                .from(trade2)
+                .execute(dataSource)
+        )).hasMessage("");
     }
 }

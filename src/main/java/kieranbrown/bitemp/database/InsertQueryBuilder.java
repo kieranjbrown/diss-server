@@ -5,12 +5,12 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import kieranbrown.bitemp.models.BitemporalModel;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.persistence.Column;
-import javax.sql.DataSource;
+import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 public class InsertQueryBuilder<T extends BitemporalModel<T>> {
     private final Class<T> queryClass;
@@ -18,7 +18,7 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
     private SelectQuery<T> selectQuery;
     private Stream<T> objects;
 
-    InsertQueryBuilder(final QueryType queryType, final Class<T> queryClass) {
+    InsertQueryBuilder(final Class<T> queryClass) {
         this.queryClass = queryClass;
         this.query = new InsertQuery<>(queryClass);
         this.selectQuery = new SelectQuery<>(QueryType.SELECT, queryClass);
@@ -31,14 +31,17 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
     }
 
     public InsertQueryBuilder<T> fromAll(final T... objects) {
+        this.objects = this.objects.appendAll(Arrays.asList(objects));
         return this;
     }
 
     public InsertQueryBuilder<T> fromAll(final List<T> objects) {
+        this.objects = this.objects.appendAll(objects);
         return this;
     }
 
     public InsertQueryBuilder<T> fromAll(final Stream<T> objects) {
+        this.objects = this.objects.appendAll(objects);
         return this;
     }
 

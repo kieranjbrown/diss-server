@@ -5,6 +5,7 @@ import kieranbrown.bitemp.models.BitemporalModel;
 import static java.util.Objects.requireNonNull;
 
 public final class QueryBuilderFactory {
+
     private QueryBuilderFactory() {
     }
 
@@ -18,6 +19,6 @@ public final class QueryBuilderFactory {
 
     //TODO: other types of queries
     public static <S extends BitemporalModel<S>> InsertQueryBuilder<S> insert(final Class<S> clazz) {
-        return new InsertQueryBuilder<>(QueryType.INSERT, requireNonNull(clazz, "class cannot be null"));
+        return new InsertQueryBuilder<>(requireNonNull(clazz, "class cannot be null"));
     }
 }
