@@ -114,7 +114,7 @@ class InsertQueryBuilderTest {
 
     @SuppressWarnings("unchecked")
     private void assertTradesAreEqual(final Trade trade1, final Trade trade2) {
-        final List<Trade> arrayResults = entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2")
+        final List arrayResults = entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2")
                 .setParameter(1, LocalDate.of(2020, 1, 20))
                 .setParameter(2, LocalDate.of(2020, 1, 21))
                 .getResultList();
