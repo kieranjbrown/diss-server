@@ -5,7 +5,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
@@ -54,17 +53,5 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
     public T setSystemTimeEnd(final LocalDateTime systemTimeEnd) {
         this.systemTimeEnd = LocalDateTime.from(systemTimeEnd);
         return (T) this;
-    }
-
-    @PrePersist
-    void prePersist() {
-        //TODO: there has to be a better way of doing this
-        //TODO: is this needed anymore now not using repositories?
-        if (systemTimeStart == null) {
-            systemTimeStart = LocalDateTime.now();
-        }
-        if (systemTimeEnd == null) {
-            systemTimeEnd = LocalDateTime.of(9999, 12, 31, 0, 0, 0);
-        }
     }
 }
