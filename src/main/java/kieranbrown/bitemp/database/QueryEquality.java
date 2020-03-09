@@ -6,7 +6,7 @@ public enum QueryEquality {
     LESS_THAN("<"),
     GREATER_THAN_EQUAL_TO(">="),
     LESS_THAN_EQUAL_TO("<="),
-    NOT_EQUAL("<>");
+    DOES_NOT_EQUAL("<>");
 
     private String value;
 

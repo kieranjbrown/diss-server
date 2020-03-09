@@ -145,33 +145,41 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     }
 
     //x OVERLAPS y
+    //Logic for this method was refined from this website, as it was originally implemented incorrectly
+    //https://docs.teradata.com/reader/kmuOwjp1zEYg98JsB8fu_A/3VIgdwHNVU~tsnNiIR1aEw
     public SelectQueryBuilder<T> validTimeOverlaps(final LocalDate startDate, final LocalDate endDate) {
         filters = filters.append(
                 new OrQueryFilter(
                         new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
-                                new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                                new SingleQueryFilter("valid_time_start", GREATER_THAN, startDate),
+                                new NotQueryFilter(
+                                        new AndQueryFilter(
+                                                new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, endDate),
+                                                new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, endDate)
+                                        )
+                                )
                         ),
                         new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, startDate),
-                                new SingleQueryFilter("valid_time_start", LESS_THAN, endDate),
-                                new SingleQueryFilter("valid_time_end", GREATER_THAN, endDate)
+                                new SingleQueryFilter("valid_time_start", LESS_THAN, startDate),
+                                new NotQueryFilter(
+                                        new AndQueryFilter(
+                                                new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, startDate),
+                                                new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                                        )
+                                )
                         ),
                         new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", LESS_THAN_EQUAL_TO, startDate),
-                                new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, endDate)
-                        ),
-                        new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", LESS_THAN_EQUAL_TO, startDate),
-                                new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, startDate),
-                                new SingleQueryFilter("valid_time_start", LESS_THAN, endDate)
+                                new SingleQueryFilter("valid_time_start", EQUALS, startDate),
+                                new OrQueryFilter(
+                                        new SingleQueryFilter("valid_time_end", EQUALS, endDate),
+                                        new SingleQueryFilter("valid_time_end", DOES_NOT_EQUAL, endDate)
+                                )
                         )
                 )
         );
         return this;
     }
 
-    //TODO: change to DataSource / JdbcTemplate? could be autowired in the Factory so user doesn't have to pass it
     @SuppressWarnings("unchecked")
     public SelectQueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
