@@ -85,7 +85,7 @@ class UpdateQueryBuilderTest {
         QueryBuilderFactory.update(Trade.class)
                 .set("volume", 250)
                 .where(new SingleQueryFilter("price", QueryEquality.EQUALS, new BigDecimal("123.45")))
-                .execute(dataSource);
+                .execute(entityManager);
 
         final List<Trade> results = QueryBuilderFactory.select(Trade.class)
                 .where(new SingleQueryFilter("stock", QueryEquality.EQUALS, "AAPL"))
@@ -120,7 +120,7 @@ class UpdateQueryBuilderTest {
                 .forValidTimePeriod(LocalDate.of(2020, 1, 16), LocalDate.of(2020, 1, 18))
                 .set("stock", "MSFT")
                 .where(new SingleQueryFilter("id", QueryEquality.EQUALS, tradeId))
-                .execute(dataSource);
+                .execute(entityManager);
 
         final List<Trade> trades = new SelectQueryBuilder<>(QueryType.SELECT, Trade.class)
                 .where(new SingleQueryFilter("id", QueryEquality.EQUALS, tradeId))
@@ -135,6 +135,7 @@ class UpdateQueryBuilderTest {
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
 
         assertThat(trades.get(1))
+                .hasFieldOrPropertyWithValue("stock", "MSFT")
                 .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
