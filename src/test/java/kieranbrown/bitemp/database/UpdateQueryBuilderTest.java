@@ -80,7 +80,7 @@ class UpdateQueryBuilderTest {
 
         new InsertQueryBuilder<>(Trade.class)
                 .fromAll(List.of(trade1, trade2, trade3))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         QueryBuilderFactory.update(Trade.class)
                 .set("volume", 250)
@@ -98,7 +98,50 @@ class UpdateQueryBuilderTest {
                 .forEach(x -> assertThat(x.getVolume()).isEqualTo(250));
     }
 
-    //TODO: updating existing row
-//    @Test
-//    void updateExistingTimePeriod
+    @Test
+    void updateForValidTimePeriod() throws OverlappingKeyException {
+        final UUID tradeId = UUID.randomUUID();
+        new InsertQueryBuilder<>(Trade.class).from(new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                        .build())
+                .setStock("AAPL")
+                .setBuySellFlag('B')
+                .setMarketLimitFlag('M')
+                .setPrice(new BigDecimal("123.45"))
+                .setVolume(200)
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
+        ).execute(entityManager);
+
+        new UpdateQueryBuilder<>(Trade.class)
+                .forValidTimePeriod(LocalDate.of(2020, 1, 16), LocalDate.of(2020, 1, 18))
+                .set("stock", "MSFT")
+                .where(new SingleQueryFilter("id", QueryEquality.EQUALS, tradeId))
+                .execute(dataSource);
+
+        final List<Trade> trades = new SelectQueryBuilder<>(QueryType.SELECT, Trade.class)
+                .where(new SingleQueryFilter("id", QueryEquality.EQUALS, tradeId))
+                .execute(entityManager)
+                .getResults();
+
+        assertThat(trades).hasSize(3);
+
+        assertThat(trades.get(0))
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+        assertThat(trades.get(1))
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
+
+        assertThat(trades.get(2))
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 18))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 20));
+    }
 }

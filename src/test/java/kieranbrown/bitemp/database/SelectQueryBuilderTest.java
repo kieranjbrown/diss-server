@@ -46,7 +46,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .from(trade)
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         assertThat(
                 QueryBuilderFactory.selectDistinct(Trade.class)
@@ -109,7 +109,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         assertThat(
                 QueryBuilderFactory.select(Trade.class)
@@ -197,7 +197,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -272,7 +272,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -346,7 +346,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -434,7 +434,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -509,7 +509,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -596,7 +596,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -670,7 +670,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -744,7 +744,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final SelectQueryBuilder<Trade> selectQueryBuilder = QueryBuilderFactory.select(Trade.class);
         final List<Trade> results = selectQueryBuilder
@@ -818,7 +818,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         assertThat(
                 QueryBuilderFactory.select(Trade.class)
@@ -950,7 +950,7 @@ class SelectQueryBuilderTest {
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
                         )
                 )
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final List<Trade> trades = QueryBuilderFactory.select(Trade.class)
                 .validTimeOverlaps(startDate, endDate)
@@ -1034,7 +1034,7 @@ class SelectQueryBuilderTest {
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL")
                 ))
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
         fail();
 //            QueryBuilderFactory.selectDistinct(Trade.class).
         //TODO: finish this

@@ -6,6 +6,7 @@ import kieranbrown.bitemp.models.BitemporalModel;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.time.LocalDate;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,6 +21,10 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
         this.filters = List.empty();
     }
 
+    public UpdateQueryBuilder<T> forValidTimePeriod(final LocalDate startDate, final LocalDate endDate) {
+        return this;
+    }
+
     public UpdateQueryBuilder<T> set(final String column, final Object value) {
         this.fields = this.fields.append(new Tuple2<>(column, value));
         return this;
@@ -30,14 +35,18 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-//    public UpdateQueryBuilder<T> forValidTimePeriod(final )
-
     public void execute(final DataSource dataSource) {
+//        if (new SelectQueryBuilder<>(QueryType.SELECT, queryClass)
+//                .validTimeOverlaps(object.getBitemporalKey().getValidTimeStart(), object.getBitemporalKey().getValidTimeEnd())
+//                .execute(entityManager)
+//                .getResults()
+//                .length() > 0)
         final String sql = new UpdateQuery<>(queryClass)
                 .addFields(fields)
                 .addFilters(filters)
                 .build();
 
+        System.out.println(sql);
         new JdbcTemplate(dataSource).execute(sql);
     }
 }

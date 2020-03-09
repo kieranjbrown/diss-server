@@ -60,7 +60,7 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
-        QueryBuilderFactory.insert(Trade.class).from(trade).execute(dataSource, entityManager);
+        QueryBuilderFactory.insert(Trade.class).from(trade).execute(entityManager);
 
         assertThat(
                 entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2 and id = ?3")
@@ -102,13 +102,13 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
-        QueryBuilderFactory.insert(Trade.class).fromAll(trade1, trade2).execute(dataSource, entityManager);
+        QueryBuilderFactory.insert(Trade.class).fromAll(trade1, trade2).execute(entityManager);
         assertTradesAreEqual(trade1, trade2);
 
-        QueryBuilderFactory.insert(Trade.class).fromAll(io.vavr.collection.List.of(trade1, trade2)).execute(dataSource, entityManager);
+        QueryBuilderFactory.insert(Trade.class).fromAll(io.vavr.collection.List.of(trade1, trade2)).execute(entityManager);
         assertTradesAreEqual(trade1, trade2);
 
-        QueryBuilderFactory.insert(Trade.class).fromAll(Stream.of(trade1, trade2)).execute(dataSource, entityManager);
+        QueryBuilderFactory.insert(Trade.class).fromAll(Stream.of(trade1, trade2)).execute(entityManager);
         assertTradesAreEqual(trade1, trade2);
     }
 
@@ -159,7 +159,7 @@ class InsertQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .from(trade1)
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         assertThat(
                 entityManager.createNativeQuery("select * from reporting.trade_data where id = ?1", Trade.class)
@@ -172,7 +172,7 @@ class InsertQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .from(trade2)
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         final List<Trade> results = new JdbcTemplate(dataSource).query("select id, valid_time_start, valid_time_end, system_time_start, system_time_end, volume, price, market_limit_flag, buy_sell_flag, stock from reporting.trade_data where id = '" + tradeId + "' order by system_time_start ASC", new BeanPropertyRowMapper<Trade>(Trade.class));
         assertThat(results).isNotNull().hasSize(2);
@@ -217,11 +217,11 @@ class InsertQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .from(trade1)
-                .execute(dataSource, entityManager);
+                .execute(entityManager);
 
         assertThat(assertThrows(OverlappingKeyException.class, () -> QueryBuilderFactory.insert(Trade.class)
                 .from(trade2)
-                .execute(dataSource, entityManager)
+                .execute(entityManager)
         )).hasMessage("overlapping valid time for id = '769fb864-f3b7-4ca5-965e-bcff80088197'");
     }
 }

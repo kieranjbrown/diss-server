@@ -6,6 +6,7 @@ import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import kieranbrown.bitemp.models.BitemporalModel;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 
 import javax.persistence.Column;
 import javax.persistence.EntityManager;
@@ -48,8 +49,8 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public InsertQueryBuilder<T> execute(final DataSource dataSource,
-                                         final EntityManager entityManager) throws OverlappingKeyException {
+    public InsertQueryBuilder<T> execute(final EntityManager entityManager) throws OverlappingKeyException {
+        final DataSource dataSource = getDataSource(entityManager);
         final List<List<Tuple2<String, Object>>> map = objects.map(o -> {
             return List.of(queryClass.getDeclaredFields())
                     .map(x -> new Tuple2<>(x, getFieldName(x)))
@@ -85,6 +86,10 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         query.addFields(map);
         new JdbcTemplate(dataSource).execute(query.build());
         return this;
+    }
+
+    private DataSource getDataSource(EntityManager entityManager) {
+        return ((EntityManagerFactoryInfo) entityManager.getEntityManagerFactory()).getDataSource();
     }
 
     private String getFieldName(final Field field) {
