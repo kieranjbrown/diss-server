@@ -55,9 +55,9 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
                     .map(x -> new Tuple2<>(x, getFieldName(x)))
                     .map(x -> new Tuple2<>(getColumnName(x._1), getFieldValue(x._2, o)))
                     .appendAll(
-                            List.of(new Tuple2<>("id", o.getTradeKey().getId()),
-                                    new Tuple2<>("valid_time_start", o.getTradeKey().getValidTimeStart()),
-                                    new Tuple2<>("valid_time_end", o.getTradeKey().getValidTimeEnd()),
+                            List.of(new Tuple2<>("id", o.getBitemporalKey().getId()),
+                                    new Tuple2<>("valid_time_start", o.getBitemporalKey().getValidTimeStart()),
+                                    new Tuple2<>("valid_time_end", o.getBitemporalKey().getValidTimeEnd()),
                                     new Tuple2<>("system_time_start", o.getSystemTimeStart()),
                                     new Tuple2<>("system_time_end", o.getSystemTimeEnd())));
         })
@@ -66,20 +66,20 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         final T object = objects.get(0);
         if (new JdbcTemplate(dataSource).queryForObject(selectQuery
                 .setFields(HashMap.of("count(*)", null))
-                .setFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getTradeKey().getId())))
+                .setFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getBitemporalKey().getId())))
                 .build(), Integer.class) > 0) {
             //update old ones end date
             new JdbcTemplate(dataSource).execute(
                     new UpdateQuery<>(queryClass).addFields(List.of(new Tuple2<>("system_time_end", LocalDateTime.now())))
-                            .addFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getTradeKey().getId())))
+                            .addFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getBitemporalKey().getId())))
                             .build());
         }
         if (new SelectQueryBuilder<>(QueryType.SELECT, queryClass)
-                .validTimeOverlaps(object.getTradeKey().getValidTimeStart(), object.getTradeKey().getValidTimeEnd())
+                .validTimeOverlaps(object.getBitemporalKey().getValidTimeStart(), object.getBitemporalKey().getValidTimeEnd())
                 .execute(entityManager)
                 .getResults()
                 .length() > 0) {
-            throw new OverlappingKeyException(String.format("overlapping valid time for id = '%s'", object.getTradeKey().getId()));
+            throw new OverlappingKeyException(String.format("overlapping valid time for id = '%s'", object.getBitemporalKey().getId()));
         }
 
         query.addFields(map);

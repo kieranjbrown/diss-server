@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @SuppressWarnings("unchecked")
 public abstract class BitemporalModel<T extends BitemporalModel> {
     @EmbeddedId
-    private BitemporalKey tradeKey;
+    private BitemporalKey bitemporalKey;
 
     @Column(name = "system_time_start")
     private LocalDateTime systemTimeStart;
@@ -23,18 +23,18 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("tradeKey", tradeKey)
+                .append("tradeKey", bitemporalKey)
                 .append("systemTimeStart", systemTimeStart)
                 .append("systemTimeEnd", systemTimeEnd)
                 .toString();
     }
 
-    public BitemporalKey getTradeKey() {
-        return tradeKey;
+    public BitemporalKey getBitemporalKey() {
+        return bitemporalKey;
     }
 
-    public T setTradeKey(final BitemporalKey tradeKey) {
-        this.tradeKey = tradeKey;
+    public T setBitemporalKey(final BitemporalKey bitemporalKey) {
+        this.bitemporalKey = bitemporalKey;
         return (T) this;
     }
 

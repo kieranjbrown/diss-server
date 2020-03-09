@@ -30,7 +30,7 @@ class SelectQueryBuilderTest {
 
     @Test
     void canEvaluateSingleSelectQueryAndReturnResult() throws OverlappingKeyException {
-        final Trade trade = new Trade().setTradeKey(
+        final Trade trade = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(UUID.randomUUID())
                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -69,7 +69,7 @@ class SelectQueryBuilderTest {
     void settingFilterAffectsQuery() throws OverlappingKeyException {
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -82,7 +82,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 21))
@@ -95,7 +95,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 22))
@@ -144,7 +144,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -157,7 +157,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -170,7 +170,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -183,7 +183,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -219,7 +219,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -232,7 +232,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -245,7 +245,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -258,7 +258,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -293,7 +293,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -306,7 +306,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -319,7 +319,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -332,7 +332,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -368,7 +368,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -381,7 +381,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 15))
@@ -394,7 +394,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -407,7 +407,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 9))
@@ -420,7 +420,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 15))
@@ -444,8 +444,8 @@ class SelectQueryBuilderTest {
 
         assertThat(results).isNotNull().hasSize(3);
         results.forEach(x -> {
-            assertThat(x.getTradeKey().getValidTimeStart()).isAfterOrEqualTo(startDate);
-            assertThat(x.getTradeKey().getValidTimeEnd()).isBeforeOrEqualTo(endDate);
+            assertThat(x.getBitemporalKey().getValidTimeStart()).isAfterOrEqualTo(startDate);
+            assertThat(x.getBitemporalKey().getValidTimeEnd()).isBeforeOrEqualTo(endDate);
         });
     }
 
@@ -456,7 +456,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -469,7 +469,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 15))
@@ -482,7 +482,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -495,7 +495,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 9))
@@ -519,8 +519,8 @@ class SelectQueryBuilderTest {
 
         assertThat(results).isNotNull().hasSize(1);
         results.forEach(x -> {
-            assertThat(x.getTradeKey().getValidTimeStart()).isEqualTo(startDate);
-            assertThat(x.getTradeKey().getValidTimeEnd()).isEqualTo(endDate);
+            assertThat(x.getBitemporalKey().getValidTimeStart()).isEqualTo(startDate);
+            assertThat(x.getBitemporalKey().getValidTimeEnd()).isEqualTo(endDate);
         });
     }
 
@@ -530,7 +530,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 9))
@@ -543,7 +543,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 8))
@@ -556,7 +556,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 9))
@@ -569,7 +569,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -582,7 +582,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -606,8 +606,8 @@ class SelectQueryBuilderTest {
 
         assertThat(results).isNotNull().hasSize(3);
         results.forEach(x -> {
-            assertThat(x.getTradeKey().getValidTimeStart()).isBeforeOrEqualTo(startDate);
-            assertThat(x.getTradeKey().getValidTimeEnd()).isBeforeOrEqualTo(startDate);
+            assertThat(x.getBitemporalKey().getValidTimeStart()).isBeforeOrEqualTo(startDate);
+            assertThat(x.getBitemporalKey().getValidTimeEnd()).isBeforeOrEqualTo(startDate);
         });
     }
 
@@ -617,7 +617,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 9))
@@ -630,7 +630,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 9))
@@ -643,7 +643,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 7))
@@ -656,7 +656,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 7))
@@ -680,8 +680,8 @@ class SelectQueryBuilderTest {
 
         assertThat(results).isNotNull().hasSize(1);
         results.forEach(x -> {
-            assertThat(x.getTradeKey().getValidTimeStart()).isBeforeOrEqualTo(startDate);
-            assertThat(x.getTradeKey().getValidTimeEnd()).isBeforeOrEqualTo(startDate);
+            assertThat(x.getBitemporalKey().getValidTimeStart()).isBeforeOrEqualTo(startDate);
+            assertThat(x.getBitemporalKey().getValidTimeEnd()).isBeforeOrEqualTo(startDate);
         });
     }
 
@@ -691,7 +691,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -704,7 +704,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 19))
@@ -717,7 +717,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 21))
@@ -730,7 +730,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -754,8 +754,8 @@ class SelectQueryBuilderTest {
 
         assertThat(results).isNotNull().hasSize(2);
         results.forEach(x -> {
-            assertThat(x.getTradeKey().getValidTimeStart()).isAfterOrEqualTo(endDate);
-            assertThat(x.getTradeKey().getValidTimeEnd()).isAfter(endDate);
+            assertThat(x.getBitemporalKey().getValidTimeStart()).isAfterOrEqualTo(endDate);
+            assertThat(x.getBitemporalKey().getValidTimeEnd()).isAfter(endDate);
         });
     }
 
@@ -765,7 +765,7 @@ class SelectQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -778,7 +778,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 19))
@@ -791,7 +791,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 21))
@@ -804,7 +804,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 10))
@@ -829,8 +829,8 @@ class SelectQueryBuilderTest {
                 .hasSize(1)
                 .first()
                 .satisfies(x -> {
-                    assertThat(x.getTradeKey().getValidTimeStart()).isEqualTo(endDate);
-                    assertThat(x.getTradeKey().getValidTimeEnd()).isAfter(endDate);
+                    assertThat(x.getBitemporalKey().getValidTimeStart()).isEqualTo(endDate);
+                    assertThat(x.getBitemporalKey().getValidTimeEnd()).isAfter(endDate);
                 });
     }
 
@@ -842,7 +842,7 @@ class SelectQueryBuilderTest {
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
                         //S1 > S2 AND NOT (S1 >= E2 AND E1 >= E2)
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 16))
@@ -855,7 +855,7 @@ class SelectQueryBuilderTest {
                                 .setVolume(200)
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 16))
@@ -868,7 +868,7 @@ class SelectQueryBuilderTest {
                                 .setVolume(200)
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 18))
@@ -882,7 +882,7 @@ class SelectQueryBuilderTest {
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
                         //S2 > S1 AND NOT (S2 >= E1 AND E2 >= E1)
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 14))
@@ -895,7 +895,7 @@ class SelectQueryBuilderTest {
                                 .setVolume(200)
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 14))
@@ -908,7 +908,7 @@ class SelectQueryBuilderTest {
                                 .setVolume(200)
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 13))
@@ -922,7 +922,7 @@ class SelectQueryBuilderTest {
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
                         //S1 = S2 AND (E1 = E2 OR E1 <> E2)
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 15))
@@ -935,7 +935,7 @@ class SelectQueryBuilderTest {
                                 .setVolume(200)
                                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 15))
@@ -960,32 +960,32 @@ class SelectQueryBuilderTest {
         assertThat(trades).isNotNull().hasSize(6);
 
         assertThat(trades.get(0)).isNotNull()
-                .extracting("tradeKey")
+                .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
 
         assertThat(trades.get(1)).isNotNull()
-                .extracting("tradeKey")
+                .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
 
         assertThat(trades.get(2)).isNotNull()
-                .extracting("tradeKey")
+                .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
 
         assertThat(trades.get(3)).isNotNull()
-                .extracting("tradeKey")
+                .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
 
         assertThat(trades.get(4)).isNotNull()
-                .extracting("tradeKey")
+                .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 17));
 
         assertThat(trades.get(5)).isNotNull()
-                .extracting("tradeKey")
+                .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 19));
     }
@@ -994,7 +994,7 @@ class SelectQueryBuilderTest {
     void canCreateDistinctQuery() throws OverlappingKeyException {
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -1007,7 +1007,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 19))
@@ -1020,7 +1020,7 @@ class SelectQueryBuilderTest {
                                 .setMarketLimitFlag('M')
                                 .setBuySellFlag('B')
                                 .setStock("GOOGL"),
-                        new Trade().setTradeKey(
+                        new Trade().setBitemporalKey(
                                 new BitemporalKey.Builder()
                                         .setTradeId(UUID.randomUUID())
                                         .setValidTimeStart(LocalDate.of(2020, 1, 21))

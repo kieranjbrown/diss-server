@@ -36,7 +36,7 @@ class UpdateQueryBuilderTest {
 
     @Test
     void executeUpdatesRowsInDatabase() throws OverlappingKeyException {
-        final Trade trade1 = new Trade().setTradeKey(
+        final Trade trade1 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(UUID.randomUUID())
                         .setValidTimeStart(LocalDate.of(2020, 1, 14))
@@ -50,7 +50,7 @@ class UpdateQueryBuilderTest {
                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0));
 
-        final Trade trade2 = new Trade().setTradeKey(
+        final Trade trade2 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(UUID.randomUUID())
                         .setValidTimeStart(LocalDate.of(2020, 1, 16))
@@ -64,7 +64,7 @@ class UpdateQueryBuilderTest {
                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 10, 0, 0))
                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0));
 
-        final Trade trade3 = new Trade().setTradeKey(
+        final Trade trade3 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(UUID.randomUUID())
                         .setValidTimeStart(LocalDate.of(2020, 1, 16))

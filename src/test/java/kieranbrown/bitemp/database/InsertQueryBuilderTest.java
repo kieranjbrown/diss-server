@@ -51,7 +51,7 @@ class InsertQueryBuilderTest {
                 .setValidTimeStart(LocalDate.of(2020, 1, 20))
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                 .build();
-        final Trade trade = new Trade().setTradeKey(key)
+        final Trade trade = new Trade().setBitemporalKey(key)
                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
                 .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .setVolume(200)
@@ -76,7 +76,7 @@ class InsertQueryBuilderTest {
 
     @Test
     void canInsertMultipleObjectsAtOnce() throws OverlappingKeyException {
-        final Trade trade1 = new Trade().setTradeKey(new BitemporalKey.Builder()
+        final Trade trade1 = new Trade().setBitemporalKey(new BitemporalKey.Builder()
                 .setTradeId(UUID.randomUUID())
                 .setValidTimeStart(LocalDate.of(2020, 1, 20))
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
@@ -89,7 +89,7 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
-        final Trade trade2 = new Trade().setTradeKey(new BitemporalKey.Builder()
+        final Trade trade2 = new Trade().setBitemporalKey(new BitemporalKey.Builder()
                 .setTradeId(UUID.randomUUID())
                 .setValidTimeStart(LocalDate.of(2020, 1, 20))
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
@@ -131,7 +131,7 @@ class InsertQueryBuilderTest {
     void insertFromObjectUpdatesExistingSystemTime() throws OverlappingKeyException {
         final LocalDateTime now = LocalDateTime.now();
         final UUID tradeId = UUID.randomUUID();
-        final Trade trade1 = new Trade().setTradeKey(
+        final Trade trade1 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(tradeId)
                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
@@ -144,7 +144,7 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
-        final Trade trade2 = new Trade().setTradeKey(
+        final Trade trade2 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(tradeId)
                         .setValidTimeStart(LocalDate.of(2020, 1, 21))
@@ -189,7 +189,7 @@ class InsertQueryBuilderTest {
     @Test
     void insertFromObjectThrowsForOverlappingValidTime() throws OverlappingKeyException {
         final UUID tradeId = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
-        final Trade trade1 = new Trade().setTradeKey(
+        final Trade trade1 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(tradeId)
                         .setValidTimeStart(LocalDate.of(2020, 1, 18))
@@ -202,7 +202,7 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
-        final Trade trade2 = new Trade().setTradeKey(
+        final Trade trade2 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(tradeId)
                         .setValidTimeStart(LocalDate.of(2020, 1, 19))
