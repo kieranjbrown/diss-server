@@ -22,13 +22,13 @@ class SelectQueryTest {
         assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(null, Trade.class)))
                 .hasMessage("queryType cannot be null");
 
-        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT_DISTINCT, null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT, null)))
                 .hasMessage("class cannot be null");
     }
 
     @Test
     void setFieldsThrowsForNullInput() {
-        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class).setFields(null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT, Trade.class).setFields(null)))
                 .hasMessage("fields cannot be null");
     }
 
@@ -48,7 +48,7 @@ class SelectQueryTest {
                 new Tuple2<>("market_limit_flag", null)
         );
 
-        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class);
+        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
         selectQuery.setFields(fields);
 
         assertThat(selectQuery).hasFieldOrPropertyWithValue("fields", fields);
@@ -124,13 +124,6 @@ class SelectQueryTest {
         final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
         selectQuery.setFilters(List.of(new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3))));
         assertThat(selectQuery.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3");
-    }
-
-    @Test
-    void queryIsBuiltAppropriatelyForDistinctQuery() {
-        final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class);
-        selectQuery.setFields(HashMap.ofEntries(new Tuple2<>("id", null), new Tuple2<>("version", null)));
-        assertThat(selectQuery.build()).isNotNull().isEqualTo("SELECT DISTINCT version, id from reporting.trade_data");
     }
 
     @Test

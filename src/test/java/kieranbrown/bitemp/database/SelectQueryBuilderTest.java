@@ -18,7 +18,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @DataJpaTest
 @SpringJUnitConfig
@@ -49,7 +48,7 @@ class SelectQueryBuilderTest {
                 .execute(entityManager);
 
         assertThat(
-                QueryBuilderFactory.selectDistinct(Trade.class)
+                QueryBuilderFactory.select(Trade.class)
                         .execute(entityManager)
                         .getResults())
                 .isNotNull()
@@ -988,55 +987,5 @@ class SelectQueryBuilderTest {
                 .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 15))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 19));
-    }
-
-    @Test
-    void canCreateDistinctQuery() throws OverlappingKeyException {
-        QueryBuilderFactory.insert(Trade.class)
-                .fromAll(List.of(
-                        new Trade().setBitemporalKey(
-                                new BitemporalKey.Builder()
-                                        .setTradeId(UUID.randomUUID())
-                                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                        .build())
-                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 11, 3, 45, 0))
-                                .setVolume(200)
-                                .setPrice(new BigDecimal("123.45"))
-                                .setMarketLimitFlag('M')
-                                .setBuySellFlag('B')
-                                .setStock("GOOGL"),
-                        new Trade().setBitemporalKey(
-                                new BitemporalKey.Builder()
-                                        .setTradeId(UUID.randomUUID())
-                                        .setValidTimeStart(LocalDate.of(2020, 1, 19))
-                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                        .build())
-                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 9, 3, 45, 0))
-                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 13, 3, 45, 0))
-                                .setVolume(200)
-                                .setPrice(new BigDecimal("123.45"))
-                                .setMarketLimitFlag('M')
-                                .setBuySellFlag('B')
-                                .setStock("GOOGL"),
-                        new Trade().setBitemporalKey(
-                                new BitemporalKey.Builder()
-                                        .setTradeId(UUID.randomUUID())
-                                        .setValidTimeStart(LocalDate.of(2020, 1, 21))
-                                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                                        .build())
-                                .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 10, 0, 0, 0))
-                                .setVolume(200)
-                                .setPrice(new BigDecimal("123.45"))
-                                .setMarketLimitFlag('M')
-                                .setBuySellFlag('B')
-                                .setStock("GOOGL")
-                ))
-                .execute(entityManager);
-        fail();
-//            QueryBuilderFactory.selectDistinct(Trade.class).
-        //TODO: finish this
     }
 }

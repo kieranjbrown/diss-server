@@ -8,19 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class QueryBuilderFactoryTest {
     @Test
-    void canCreateQueryForDistinctResult() {
-        assertThat(QueryBuilderFactory.selectDistinct(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.SELECT_DISTINCT, Trade.class))
-                .hasFieldOrPropertyWithValue("queryClass", Trade.class);
-    }
-
-    @Test
-    void selectDistinctThrowsForNullValues() {
-        assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.selectDistinct(null)))
-                .hasMessage("class cannot be null");
-    }
-
-    @Test
     void canCreateQueryForMultipleResults() {
         assertThat(QueryBuilderFactory.select(Trade.class)).isNotNull()
                 .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.SELECT, Trade.class))

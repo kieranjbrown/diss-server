@@ -4,14 +4,11 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.List;
 import io.vavr.collection.Map;
 import kieranbrown.bitemp.models.BitemporalModel;
-import kieranbrown.bitemp.utils.QueryUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import javax.persistence.Entity;
 
-import static io.vavr.API.*;
 import static java.util.Objects.requireNonNull;
-import static kieranbrown.bitemp.database.QueryType.*;
 
 class SelectQuery<T extends BitemporalModel<T>> {
 
@@ -64,35 +61,7 @@ class SelectQuery<T extends BitemporalModel<T>> {
     }
 
     public String build() {
-        return Match(queryType).of(
-                Case($(SELECT), o -> buildSelectQuery()),
-                Case($(SELECT_DISTINCT), o -> buildDistinctSelectQuery()),
-                Case($(INSERT), o -> buildInsertQuery())
-        );
-    }
-
-    private String buildInsertQuery() {
-        return "INSERT INTO " +
-                getTableName() +
-                " (" +
-                getFields() +
-                ") VALUES (" +
-                getValues() +
-                ")";
-    }
-
-    //TODO: figure out how to make this all prepared without a connection?
-    private String buildSelectQuery() {
         return "SELECT " +
-                getFields() +
-                " from " +
-                getTableName() +
-                getFilters() +
-                getLimit();
-    }
-
-    private String buildDistinctSelectQuery() {
-        return "SELECT DISTINCT " +
                 getFields() +
                 " from " +
                 getTableName() +
@@ -104,10 +73,6 @@ class SelectQuery<T extends BitemporalModel<T>> {
         return fields.length() > 0
                 ? fields.keySet().reduce((x, y) -> x + ", " + y)
                 : "*";
-    }
-
-    private String getValues() {
-        return fields.values().map(QueryUtils::toString).reduce((x, y) -> x + ", " + y);
     }
 
     public SelectQuery<T> setFields(final Map<String, Object> fields) {
