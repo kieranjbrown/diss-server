@@ -3,6 +3,7 @@ package kieranbrown.bitemp.database;
 import io.vavr.collection.List;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -27,6 +28,11 @@ class UpdateQueryBuilderTest {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @BeforeEach
+    void setup() {
+        entityManager.createNativeQuery("delete from reporting.trade_data").executeUpdate();
+    }
 
     @Test
     void constructorThrowsForNullInput() {
@@ -144,5 +150,82 @@ class UpdateQueryBuilderTest {
                 .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 18))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 20));
+    }
+
+    @Test
+    void updateForValidTimePeriodAffectsOnlyThoseThatNeedIt() throws OverlappingKeyException {
+        final UUID id1 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
+        final UUID id2 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088198");
+        new InsertQueryBuilder<>(Trade.class).fromAll(new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(id1)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 14))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                        .build())
+                        .setStock("AAPL")
+                        .setBuySellFlag('B')
+                        .setMarketLimitFlag('M')
+                        .setPrice(new BigDecimal("123.45"))
+                        .setVolume(200)
+                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0)),
+                new Trade().setBitemporalKey(
+                        new BitemporalKey.Builder()
+                                .setTradeId(id2)
+                                .setValidTimeStart(LocalDate.of(2020, 1, 10))
+                                .setValidTimeEnd(LocalDate.of(2020, 1, 16))
+                                .build())
+                        .setStock("AAPL")
+                        .setBuySellFlag('B')
+                        .setMarketLimitFlag('M')
+                        .setPrice(new BigDecimal("123.45"))
+                        .setVolume(200)
+                        .setSystemTimeStart(LocalDateTime.of(2020, 1, 10, 10, 0, 0))
+                        .setSystemTimeEnd(LocalDateTime.of(2020, 1, 15, 3, 30, 0))
+        ).execute(entityManager);
+
+        new UpdateQueryBuilder<>(Trade.class)
+                .forValidTimePeriod(LocalDate.of(2020, 1, 16), LocalDate.of(2020, 1, 18))
+                .set("stock", "MSFT")
+                .where(new SingleQueryFilter("stock", QueryEquality.EQUALS, "AAPL"))
+                .execute(entityManager);
+
+        final List<Trade> trades = new SelectQueryBuilder<>(QueryType.SELECT, Trade.class)
+//                .where(new SingleQueryFilter("id", QueryEquality.EQUALS, id1))
+                .execute(entityManager)
+                .getResults()
+                .sortBy(x -> x.getBitemporalKey().getId());
+
+        assertThat(trades).hasSize(5);
+
+        assertThat(trades.get(0))
+                .hasFieldOrPropertyWithValue("stock", "AAPL")
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 14))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+        assertThat(trades.get(1))
+                .hasFieldOrPropertyWithValue("stock", "MSFT")
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
+
+        assertThat(trades.get(2))
+                .hasFieldOrPropertyWithValue("stock", "AAPL")
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 18))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 20));
+
+        assertThat(trades.get(3))
+                .hasFieldOrPropertyWithValue("stock", "AAPL")
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
+
+        assertThat(trades.get(4))
+                .hasFieldOrPropertyWithValue("stock", "MSFT")
+                .extracting("bitemporalKey")
+                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
+                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
     }
 }
