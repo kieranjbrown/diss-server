@@ -54,7 +54,7 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
                 timeResults.forEach(entityManager::detach);
 
                 final String firstSql = new UpdateQuery<>(queryClass)
-                        .addFields(fields.append(new Tuple2<>("valid_time_end", x._1)))
+                        .addFields(List.of(new Tuple2<>("valid_time_end", x._1)))
                         .addFilters(filters.append(
                                 new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId())))
                         ))

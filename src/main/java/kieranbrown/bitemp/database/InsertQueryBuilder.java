@@ -64,6 +64,7 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         })
                 .toList();
 
+        //TODO: why does this only happen for the first one?
         final T object = objects.get(0);
         if (new JdbcTemplate(dataSource).queryForObject(selectQuery
                 .setFields(HashMap.of("count(*)", null))

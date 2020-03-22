@@ -1,6 +1,5 @@
 package kieranbrown.bitemp.database;
 
-import io.vavr.Tuple2;
 import io.vavr.Tuple3;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
@@ -17,7 +16,6 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     private final SelectQuery<T> query;
     private final Class<T> queryClass;
 
-    private List<Tuple2<String, Object>> fields;
     private Option<List<T>> results;
     private List<QueryFilter> filters;
 
@@ -26,13 +24,6 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
         queryClass = clazz;
         this.query = new SelectQuery<>(queryType, clazz);
         results = Option.none();
-        fields = List.of(
-                "id",
-                "valid_time_start",
-                "valid_time_end",
-                "system_time_start",
-                "system_time_end")
-                .map(x -> new Tuple2<>(x, null));
         filters = List.empty();
     }
 
@@ -182,7 +173,6 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     public SelectQueryBuilder<T> execute(final EntityManager entityManager) {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFilters(filters);
-        System.out.println(query.build());
         results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
         return this;
     }

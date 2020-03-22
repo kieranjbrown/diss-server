@@ -18,13 +18,13 @@ class BitemporalKeyTest {
 
     @Test
     void setVersionThrowsForNullValidTimeStart() {
-        assertThat(assertThrows(IllegalArgumentException.class, () -> new BitemporalKey.Builder().setValidTimeStart(null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new BitemporalKey.Builder().setValidTimeStart(null)))
                 .hasMessage("validTimeStart cannot be null");
     }
 
     @Test
     void setVersionThrowsForNullValidTimeEnd() {
-        assertThat(assertThrows(IllegalArgumentException.class, () -> new BitemporalKey.Builder().setValidTimeEnd(null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new BitemporalKey.Builder().setValidTimeEnd(null)))
                 .hasMessage("validTimeEnd cannot be null");
     }
 

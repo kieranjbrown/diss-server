@@ -191,12 +191,13 @@ class UpdateQueryBuilderTest {
                 .execute(entityManager);
 
         final List<Trade> trades = new SelectQueryBuilder<>(QueryType.SELECT, Trade.class)
-//                .where(new SingleQueryFilter("id", QueryEquality.EQUALS, id1))
                 .execute(entityManager)
                 .getResults()
                 .sortBy(x -> x.getBitemporalKey().getId());
 
-        assertThat(trades).hasSize(5);
+        assertThat(trades).hasSize(4);
+
+        trades.forEach(System.out::println);
 
         assertThat(trades.get(0))
                 .hasFieldOrPropertyWithValue("stock", "AAPL")
@@ -221,11 +222,5 @@ class UpdateQueryBuilderTest {
                 .extracting("bitemporalKey")
                 .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 10))
                 .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 16));
-
-        assertThat(trades.get(4))
-                .hasFieldOrPropertyWithValue("stock", "MSFT")
-                .extracting("bitemporalKey")
-                .hasFieldOrPropertyWithValue("validTimeStart", LocalDate.of(2020, 1, 16))
-                .hasFieldOrPropertyWithValue("validTimeEnd", LocalDate.of(2020, 1, 18));
     }
 }
