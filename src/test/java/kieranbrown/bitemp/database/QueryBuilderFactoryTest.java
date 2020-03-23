@@ -10,7 +10,7 @@ class QueryBuilderFactoryTest {
     @Test
     void canCreateQueryForMultipleResults() {
         assertThat(QueryBuilderFactory.select(Trade.class)).isNotNull()
-                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(QueryType.SELECT, Trade.class))
+                .hasFieldOrPropertyWithValue("query", new SelectQuery<>(Trade.class))
                 .hasFieldOrPropertyWithValue("queryClass", Trade.class);
     }
 

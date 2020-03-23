@@ -45,7 +45,7 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
     public void execute(final EntityManager entityManager) {
         final DataSource dataSource = getDataSource(entityManager);
         validTimePeriod.peek(x -> {
-            final SelectQueryBuilder<T> selectQueryBuilder = new SelectQueryBuilder<>(QueryType.SELECT, queryClass);
+            final SelectQueryBuilder<T> selectQueryBuilder = new SelectQueryBuilder<>(queryClass);
             filters.forEach(selectQueryBuilder::where);
             final List<T> noTimeResults = selectQueryBuilder.execute(entityManager).getResults();
             final List<T> timeResults = selectQueryBuilder.validTimeOverlaps(x._1, x._2).execute(entityManager).getResults();

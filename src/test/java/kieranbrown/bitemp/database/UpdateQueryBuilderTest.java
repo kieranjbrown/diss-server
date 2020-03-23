@@ -128,7 +128,7 @@ class UpdateQueryBuilderTest {
                 .where(new SingleQueryFilter("id", QueryEquality.EQUALS, tradeId))
                 .execute(entityManager);
 
-        final List<Trade> trades = new SelectQueryBuilder<>(QueryType.SELECT, Trade.class)
+        final List<Trade> trades = new SelectQueryBuilder<>(Trade.class)
                 .where(new SingleQueryFilter("id", QueryEquality.EQUALS, tradeId))
                 .execute(entityManager)
                 .getResults();
@@ -190,7 +190,7 @@ class UpdateQueryBuilderTest {
                 .where(new SingleQueryFilter("stock", QueryEquality.EQUALS, "AAPL"))
                 .execute(entityManager);
 
-        final List<Trade> trades = new SelectQueryBuilder<>(QueryType.SELECT, Trade.class)
+        final List<Trade> trades = new SelectQueryBuilder<>(Trade.class)
                 .execute(entityManager)
                 .getResults()
                 .sortBy(x -> x.getBitemporalKey().getId());

@@ -12,14 +12,12 @@ import static java.util.Objects.requireNonNull;
 
 class SelectQuery<T extends BitemporalModel<T>> {
 
-    private final QueryType queryType;
     private final Class<T> queryClass;
     private Map<String, Object> fields;
     private List<QueryFilter> filters;
     private int limit = -1;
 
-    public SelectQuery(final QueryType queryType, final Class<T> clazz) {
-        this.queryType = requireNonNull(queryType, "queryType cannot be null");
+    public SelectQuery(final Class<T> clazz) {
         queryClass = requireNonNull(clazz, "class cannot be null");
         fields = HashMap.empty();
         filters = List.empty();
@@ -34,7 +32,6 @@ class SelectQuery<T extends BitemporalModel<T>> {
         SelectQuery selectQuery = (SelectQuery) o;
 
         return new EqualsBuilder()
-                .append(queryType, selectQuery.queryType)
                 .append(queryClass, selectQuery.queryClass)
                 .append(fields, selectQuery.fields)
                 .isEquals();

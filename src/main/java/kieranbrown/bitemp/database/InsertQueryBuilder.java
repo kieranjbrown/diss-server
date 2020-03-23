@@ -24,7 +24,7 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
     InsertQueryBuilder(final Class<T> queryClass) {
         this.queryClass = queryClass;
         this.query = new InsertQuery<>(queryClass);
-        this.selectQuery = new SelectQuery<>(QueryType.SELECT, queryClass);
+        this.selectQuery = new SelectQuery<>(queryClass);
         objects = Stream.of();
     }
 
@@ -76,7 +76,7 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
                             .addFilters(List.of(new SingleQueryFilter("id", QueryEquality.EQUALS, object.getBitemporalKey().getId())))
                             .build());
         }
-        if (new SelectQueryBuilder<>(QueryType.SELECT, queryClass)
+        if (new SelectQueryBuilder<>(queryClass)
                 .validTimeOverlaps(object.getBitemporalKey().getValidTimeStart(), object.getBitemporalKey().getValidTimeEnd())
                 .execute(entityManager)
                 .getResults()

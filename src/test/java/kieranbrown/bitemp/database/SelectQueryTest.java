@@ -14,16 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class SelectQueryTest {
     @Test
     void constructorThrowsForInvalidInput() {
-        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(null, Trade.class)))
-                .hasMessage("queryType cannot be null");
-
-        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT, null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(null)))
                 .hasMessage("class cannot be null");
     }
 
     @Test
     void setFieldsThrowsForNullInput() {
-        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(QueryType.SELECT, Trade.class).setFields(null)))
+        assertThat(assertThrows(NullPointerException.class, () -> new SelectQuery<>(Trade.class).setFields(null)))
                 .hasMessage("fields cannot be null");
     }
 
@@ -43,7 +40,7 @@ class SelectQueryTest {
                 new Tuple2<>("market_limit_flag", null)
         );
 
-        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery selectQuery = new SelectQuery<>(Trade.class);
         selectQuery.setFields(fields);
 
         assertThat(selectQuery).hasFieldOrPropertyWithValue("fields", fields);
@@ -65,7 +62,7 @@ class SelectQueryTest {
                 new Tuple2<>("market_limit_flag", null)
         );
 
-        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery selectQuery = new SelectQuery<>(Trade.class);
         selectQuery.setFields(fields);
 
         final String sql = selectQuery.build();
@@ -81,7 +78,7 @@ class SelectQueryTest {
                 new Tuple2<>("version", null)
         );
 
-        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery selectQuery = new SelectQuery<>(Trade.class);
         selectQuery.setFields(fields);
         selectQuery.setLimit(3);
 
@@ -97,7 +94,7 @@ class SelectQueryTest {
                 new Tuple2<>("version", null)
         );
 
-        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery selectQuery = new SelectQuery<>(Trade.class);
         selectQuery.setFields(fields);
 
         assertThat(selectQuery.build()).isEqualTo(
@@ -110,20 +107,20 @@ class SelectQueryTest {
 
     @Test
     void notSettingFieldsSelectsAllFields() {
-        final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery<Trade> selectQuery = new SelectQuery<>(Trade.class);
         assertThat(selectQuery.build()).isEqualTo("SELECT * from reporting.trade_data");
     }
 
     @Test
     void settingFilterAddsToQuery() {
-        final SelectQuery<Trade> selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery<Trade> selectQuery = new SelectQuery<>(Trade.class);
         selectQuery.setFilters(List.of(new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3))));
         assertThat(selectQuery.build()).isEqualTo("SELECT * from reporting.trade_data where id = 3");
     }
 
     @Test
     void canBuildQueryWithOrFilter() {
-        final SelectQuery selectQuery = new SelectQuery<>(QueryType.SELECT, Trade.class);
+        final SelectQuery selectQuery = new SelectQuery<>(Trade.class);
         selectQuery.setFilters(List.of(
                 new SingleQueryFilter(new Tuple3<>("id", QueryEquality.EQUALS, 3)),
                 new OrQueryFilter(

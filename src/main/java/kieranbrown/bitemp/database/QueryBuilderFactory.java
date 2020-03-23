@@ -10,7 +10,7 @@ public final class QueryBuilderFactory {
     }
 
     public static <S extends BitemporalModel<S>> SelectQueryBuilder<S> select(final Class<S> clazz) {
-        return new SelectQueryBuilder<>(QueryType.SELECT, clazz);
+        return new SelectQueryBuilder<>(clazz);
     }
 
     public static <S extends BitemporalModel<S>> InsertQueryBuilder<S> insert(final Class<S> clazz) {

@@ -20,9 +20,9 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     private List<QueryFilter> filters;
 
     //TODO: is queryType needed anymore?
-    SelectQueryBuilder(final QueryType queryType, final Class<T> clazz) {
+    SelectQueryBuilder(final Class<T> clazz) {
         queryClass = clazz;
-        this.query = new SelectQuery<>(queryType, clazz);
+        this.query = new SelectQuery<>(clazz);
         results = Option.none();
         filters = List.empty();
     }
