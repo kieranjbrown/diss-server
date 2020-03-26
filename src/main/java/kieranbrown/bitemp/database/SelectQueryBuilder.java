@@ -2,12 +2,14 @@ package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple3;
 import io.vavr.collection.List;
+import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import kieranbrown.bitemp.models.BitemporalModel;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.function.BiFunction;
 
 import static java.util.Objects.requireNonNull;
 import static kieranbrown.bitemp.database.QueryEquality.*;
@@ -18,6 +20,35 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
 
     private Option<List<T>> results;
     private List<QueryFilter> filters;
+
+    //TODO: should all be made into BiFunctions like this and extracted elsewhere?
+    public static final BiFunction<LocalDate, LocalDate, QueryFilter> validTimeOverlaps = (startDate, endDate) -> new OrQueryFilter(
+            new AndQueryFilter(
+                    new SingleQueryFilter("valid_time_start", GREATER_THAN, startDate),
+                    new NotQueryFilter(
+                            new AndQueryFilter(
+                                    new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, endDate),
+                                    new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, endDate)
+                            )
+                    )
+            ),
+            new AndQueryFilter(
+                    new SingleQueryFilter("valid_time_start", LESS_THAN, startDate),
+                    new NotQueryFilter(
+                            new AndQueryFilter(
+                                    new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, startDate),
+                                    new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
+                            )
+                    )
+            ),
+            new AndQueryFilter(
+                    new SingleQueryFilter("valid_time_start", EQUALS, startDate),
+                    new OrQueryFilter(
+                            new SingleQueryFilter("valid_time_end", EQUALS, endDate),
+                            new SingleQueryFilter("valid_time_end", DOES_NOT_EQUAL, endDate)
+                    )
+            )
+    );
 
     //TODO: is queryType needed anymore?
     SelectQueryBuilder(final Class<T> clazz) {
@@ -39,6 +70,16 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
 
     public SelectQueryBuilder<T> where(final QueryFilter... queryFilters) {
         filters = filters.appendAll(List.of(queryFilters));
+        return this;
+    }
+
+    public SelectQueryBuilder<T> where(final List<QueryFilter> queryFilters) {
+        filters = filters.appendAll(queryFilters);
+        return this;
+    }
+
+    public SelectQueryBuilder<T> where(final Stream<QueryFilter> queryFilters) {
+        filters = filters.appendAll(queryFilters);
         return this;
     }
 
@@ -137,35 +178,7 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
     //Logic for this method was refined from this website, as it was originally implemented incorrectly
     //https://docs.teradata.com/reader/kmuOwjp1zEYg98JsB8fu_A/3VIgdwHNVU~tsnNiIR1aEw
     public SelectQueryBuilder<T> validTimeOverlaps(final LocalDate startDate, final LocalDate endDate) {
-        filters = filters.append(
-                new OrQueryFilter(
-                        new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", GREATER_THAN, startDate),
-                                new NotQueryFilter(
-                                        new AndQueryFilter(
-                                                new SingleQueryFilter("valid_time_start", GREATER_THAN_EQUAL_TO, endDate),
-                                                new SingleQueryFilter("valid_time_end", GREATER_THAN_EQUAL_TO, endDate)
-                                        )
-                                )
-                        ),
-                        new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", LESS_THAN, startDate),
-                                new NotQueryFilter(
-                                        new AndQueryFilter(
-                                                new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, startDate),
-                                                new SingleQueryFilter("valid_time_end", LESS_THAN_EQUAL_TO, endDate)
-                                        )
-                                )
-                        ),
-                        new AndQueryFilter(
-                                new SingleQueryFilter("valid_time_start", EQUALS, startDate),
-                                new OrQueryFilter(
-                                        new SingleQueryFilter("valid_time_end", EQUALS, endDate),
-                                        new SingleQueryFilter("valid_time_end", DOES_NOT_EQUAL, endDate)
-                                )
-                        )
-                )
-        );
+        filters = filters.append(validTimeOverlaps.apply(startDate, endDate));
         return this;
     }
 

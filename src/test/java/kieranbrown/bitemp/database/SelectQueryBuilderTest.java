@@ -134,6 +134,15 @@ class SelectQueryBuilderTest {
                         .getResults())
                 .isNotNull()
                 .hasSize(1);
+
+        assertThat(
+                QueryBuilderFactory.select(Trade.class)
+                        .where(List.of(new SingleQueryFilter("stock", QueryEquality.EQUALS, "GOOGL"),
+                                new SingleQueryFilter("volume", QueryEquality.EQUALS, 195)))
+                        .execute(entityManager)
+                        .getResults())
+                .isNotNull()
+                .hasSize(1);
     }
 
     @Test

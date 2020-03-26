@@ -2,6 +2,7 @@ package kieranbrown.bitemp.database;
 
 import io.vavr.Tuple3;
 import io.vavr.collection.List;
+import io.vavr.collection.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -15,6 +16,10 @@ public class OrQueryFilter implements QueryFilter {
 
     public OrQueryFilter(final List<QueryFilter> filters) {
         this.filterList = requireNonNull(filters, "filters cannot be null");
+    }
+
+    public OrQueryFilter(final Stream<QueryFilter> filters) {
+        this.filterList = requireNonNull(filters, "filters cannot be null").toList();
     }
 
     public OrQueryFilter(final QueryFilter... filters) {

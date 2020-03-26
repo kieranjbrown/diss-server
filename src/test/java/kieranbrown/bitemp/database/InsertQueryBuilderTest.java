@@ -125,15 +125,15 @@ class InsertQueryBuilderTest {
         entityManager.createNativeQuery("delete from reporting.trade_data").executeUpdate();
     }
 
-    //TODO: overlap doesn't allow this but you should be able to have one day end the same as another start?
-    //maybe change query to allow this
     @Test
     void insertFromObjectUpdatesExistingSystemTime() throws OverlappingKeyException {
         final LocalDateTime now = LocalDateTime.now();
-        final UUID tradeId = UUID.randomUUID();
+        final UUID tradeId1 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
+        final UUID tradeId2 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088198");
+        final UUID tradeId3 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088199");
         final Trade trade1 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
-                        .setTradeId(tradeId)
+                        .setTradeId(tradeId1)
                         .setValidTimeStart(LocalDate.of(2020, 1, 20))
                         .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                         .build())
@@ -146,7 +146,7 @@ class InsertQueryBuilderTest {
 
         final Trade trade2 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
-                        .setTradeId(tradeId)
+                        .setTradeId(tradeId1)
                         .setValidTimeStart(LocalDate.of(2020, 1, 21))
                         .setValidTimeEnd(LocalDate.of(2020, 1, 23))
                         .build())
@@ -157,41 +157,105 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
+        final Trade trade3 = new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId2)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 24))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 25))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("MSFT");
+
+        final Trade trade4 = new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId2)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 25))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 29))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("MSFT");
+
+        final Trade trade5 = new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId3)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 25))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 29))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("AAPL");
+
         QueryBuilderFactory.insert(Trade.class)
-                .from(trade1)
+                .fromAll(trade1, trade3)
                 .execute(entityManager);
 
-        assertThat(
-                entityManager.createNativeQuery("select * from reporting.trade_data where id = ?1", Trade.class)
-                        .setParameter(1, tradeId)
-                        .getResultList()
-                        .get(0))
+        final List originalResults = entityManager.createNativeQuery("select * from reporting.trade_data order by id ASC", Trade.class)
+                .getResultList();
+
+        assertThat(originalResults.size()).isEqualTo(2);
+        assertThat(originalResults.get(0))
+                .isNotNull()
+                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
+
+        assertThat(originalResults.get(1))
                 .isNotNull()
                 .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
 
         QueryBuilderFactory.insert(Trade.class)
-                .from(trade2)
+                .fromAll(trade2, trade4, trade5)
                 .execute(entityManager);
 
-        final List<Trade> results = new JdbcTemplate(dataSource).query("select id, valid_time_start, valid_time_end, system_time_start, system_time_end, volume, price, market_limit_flag, buy_sell_flag, stock from reporting.trade_data where id = '" + tradeId + "' order by system_time_start ASC", new BeanPropertyRowMapper<Trade>(Trade.class));
-        assertThat(results).isNotNull().hasSize(2);
+        final List<Trade> results = new JdbcTemplate(dataSource)
+                .query("select id, valid_time_start, valid_time_end, system_time_start, system_time_end, volume, price, market_limit_flag, buy_sell_flag, stock from reporting.trade_data order by id ASC, system_time_start ASC", new BeanPropertyRowMapper<>(Trade.class));
+
+        assertThat(results).isNotNull().hasSize(5);
 
         assertThat(results.get(0))
+                .hasFieldOrPropertyWithValue("stock", "GOOGL")
                 .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0));
         assertThat(results.get(0).getSystemTimeEnd()).isBetween(now.minusSeconds(1), now.plusSeconds(1));
 
         assertThat(results.get(1))
+                .hasFieldOrPropertyWithValue("stock", "GOOGL")
+                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
+
+        assertThat(results.get(2))
+                .hasFieldOrPropertyWithValue("stock", "MSFT")
+                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0));
+        assertThat(results.get(2).getSystemTimeEnd()).isBetween(now.minusSeconds(1), now.plusSeconds(1));
+
+        assertThat(results.get(3))
+                .hasFieldOrPropertyWithValue("stock", "MSFT")
+                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
+                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
+
+        assertThat(results.get(4))
+                .hasFieldOrPropertyWithValue("stock", "AAPL")
                 .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
     }
 
     @Test
     void insertFromObjectThrowsForOverlappingValidTime() throws OverlappingKeyException {
-        final UUID tradeId = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
+        final UUID tradeId1 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
+        final UUID tradeId2 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088198");
         final Trade trade1 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
-                        .setTradeId(tradeId)
+                        .setTradeId(tradeId1)
                         .setValidTimeStart(LocalDate.of(2020, 1, 18))
                         .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                         .build())
@@ -204,7 +268,7 @@ class InsertQueryBuilderTest {
 
         final Trade trade2 = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
-                        .setTradeId(tradeId)
+                        .setTradeId(tradeId1)
                         .setValidTimeStart(LocalDate.of(2020, 1, 19))
                         .setValidTimeEnd(LocalDate.of(2020, 1, 20))
                         .build())
@@ -215,13 +279,39 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
+        final Trade trade3 = new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId2)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("GOOGL");
+
+        final Trade trade4 = new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(tradeId2)
+                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("GOOGL");
+
         QueryBuilderFactory.insert(Trade.class)
-                .from(trade1)
+                .fromAll(trade1, trade3)
                 .execute(entityManager);
 
         assertThat(assertThrows(OverlappingKeyException.class, () -> QueryBuilderFactory.insert(Trade.class)
-                .from(trade2)
+                .fromAll(trade2, trade4)
                 .execute(entityManager)
-        )).hasMessage("overlapping valid time for id = '769fb864-f3b7-4ca5-965e-bcff80088197'");
+        )).hasMessage("overlapping valid time for ids = '769fb864-f3b7-4ca5-965e-bcff80088197', '769fb864-f3b7-4ca5-965e-bcff80088198'");
     }
 }
