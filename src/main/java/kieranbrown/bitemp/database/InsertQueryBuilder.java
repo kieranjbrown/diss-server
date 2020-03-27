@@ -46,6 +46,7 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
     }
 
     public InsertQueryBuilder<T> execute(final EntityManager entityManager) throws OverlappingKeyException {
+        //TODO: remove coupling? InsertQueryBuilder uses UpdateQueryBuilder and vice versa
         QueryBuilderFactory.update(Trade.class)
                 .set("system_time_end", LocalDateTime.now())
                 .where(new OrQueryFilter(objects.map(o -> o.getBitemporalKey().getId()).map(o -> new SingleQueryFilter("id", QueryEquality.EQUALS, o))))

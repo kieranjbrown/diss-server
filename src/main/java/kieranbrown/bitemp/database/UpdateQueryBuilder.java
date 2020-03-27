@@ -1,5 +1,6 @@
 package kieranbrown.bitemp.database;
 
+import com.rits.cloning.Cloner;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
@@ -11,6 +12,7 @@ import org.springframework.orm.jpa.EntityManagerFactoryInfo;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 import static java.util.Objects.requireNonNull;
 
@@ -44,71 +46,74 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
 
     public void execute(final EntityManager entityManager) {
         final DataSource dataSource = getDataSource(entityManager);
-        validTimePeriod.peek(x -> {
-            final SelectQueryBuilder<T> selectQueryBuilder = new SelectQueryBuilder<>(queryClass);
-            filters.forEach(selectQueryBuilder::where);
-            final List<T> noTimeResults = selectQueryBuilder.execute(entityManager).getResults();
-            final List<T> timeResults = selectQueryBuilder.validTimeOverlaps(x._1, x._2).execute(entityManager).getResults();
+        validTimePeriod.peek(validTime -> updateValidTimePeriod(validTime, entityManager, dataSource))
+                .onEmpty(() -> update(dataSource));
+    }
 
-            if (timeResults.length() > 0) {
-                timeResults.forEach(entityManager::detach);
+    private void updateValidTimePeriod(final Tuple2<LocalDate, LocalDate> validTime, final EntityManager entityManager, final DataSource dataSource) {
+        final SelectQueryBuilder<T> selectQueryBuilder = new SelectQueryBuilder<>(queryClass).where(filters);
+        final List<T> noTimeResults = selectQueryBuilder.execute(entityManager).getResults();
+        final List<T> timeResults = selectQueryBuilder.validTimeOverlaps(validTime._1, validTime._2).execute(entityManager).getResults();
 
-                final String firstSql = new UpdateQuery<>(queryClass)
-                        .addFields(List.of(new Tuple2<>("valid_time_end", x._1)))
-                        .addFilters(filters.append(
-                                new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId())))
-                        ))
-                        .build();
-                System.out.println("firstSql:" + firstSql);
-                new JdbcTemplate(dataSource).execute(firstSql);
-                //TODO: maybe figure out converting these to batch updates in a single query?
-                timeResults.forEach(result -> {
-                    final BitemporalKey key = result.getBitemporalKey();
+        if (timeResults.length() > 0) {
+            timeResults.forEach(entityManager::detach);
 
-                    try {
-                        //this needs the updates applied to it
-                        final T t = result.setBitemporalKey(new BitemporalKey.Builder()
-                                .setTradeId(key.getId())
-                                .setValidTimeStart(x._1)
-                                .setValidTimeEnd(x._2)
-                                .build()
-                        );
+            final String firstSql = new UpdateQuery<>(queryClass)
+                    .addFields(List.of(new Tuple2<>("valid_time_end", validTime._1)))
+                    .addFilters(filters.append(
+                            new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId())))
+                    ))
+                    .build();
+            System.out.println("firstSql:" + firstSql);
+            new JdbcTemplate(dataSource).execute(firstSql);
 
-                        new InsertQueryBuilder<>(queryClass)
-                                .from(t)
-                                .execute(entityManager);
+            final java.util.List<T> toUpdate = new ArrayList<>();
+            final java.util.List<T> toInsert = new ArrayList<>();
 
-                        new JdbcTemplate(dataSource).execute(new UpdateQuery<>(queryClass)
-                                .addFields(fields)
-                                .addFilters(filters.append(new SingleQueryFilter("valid_time_start", QueryEquality.EQUALS, x._1)))
-                                .build()
-                        );
+            timeResults.forEach(result -> {
+                final BitemporalKey key = result.getBitemporalKey();
 
-                        final T finalRow = result.setBitemporalKey(new BitemporalKey.Builder()
-                                .setTradeId(key.getId())
-                                .setValidTimeStart(x._2)
-                                .setValidTimeEnd(key.getValidTimeEnd())
-                                .build());
+                toUpdate.add(new Cloner().deepClone(result).setBitemporalKey(new BitemporalKey.Builder()
+                        .setTradeId(key.getId())
+                        .setValidTimeStart(validTime._1)
+                        .setValidTimeEnd(validTime._2)
+                        .build()
+                ));
 
-                        new InsertQueryBuilder<>(queryClass)
-                                .from(finalRow)
-                                .execute(entityManager);
-                    } catch (final OverlappingKeyException e) {
-//                    throw e;
-                    }
-                });
-            }
-            if (noTimeResults.removeAll(timeResults).length() > 0) {
-                final String updateOthersSql = new UpdateQuery<>(queryClass)
+                toInsert.add(new Cloner().deepClone(result).setBitemporalKey(new BitemporalKey.Builder()
+                        .setTradeId(key.getId())
+                        .setValidTimeStart(validTime._2)
+                        .setValidTimeEnd(key.getValidTimeEnd())
+                        .build()));
+            });
+
+            try {
+                new InsertQueryBuilder<>(queryClass)
+                        .fromAll(List.ofAll(toUpdate))
+                        .execute(entityManager);
+
+                new JdbcTemplate(dataSource).execute(new UpdateQuery<>(queryClass)
                         .addFields(fields)
-                        .addFilters(filters.append(
-                                new NotQueryFilter(new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId()))))
-                        ))
-                        .build();
-                System.out.println("updateOtherSql:" + updateOthersSql);
-                new JdbcTemplate(dataSource).execute(updateOthersSql);
+                        .addFilters(filters.append(new SingleQueryFilter("valid_time_start", QueryEquality.EQUALS, validTime._1)))
+                        .build()
+                );
+
+                new InsertQueryBuilder<>(queryClass)
+                        .fromAll(List.ofAll(toInsert))
+                        .execute(entityManager);
+            } catch (final OverlappingKeyException e) {
             }
-        }).onEmpty(() -> update(dataSource));
+        }
+        if (noTimeResults.removeAll(timeResults).length() > 0) {
+            final String updateOthersSql = new UpdateQuery<>(queryClass)
+                    .addFields(fields)
+                    .addFilters(filters.append(
+                            new NotQueryFilter(new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId()))))
+                    ))
+                    .build();
+            System.out.println("updateOtherSql:" + updateOthersSql);
+            new JdbcTemplate(dataSource).execute(updateOthersSql);
+        }
     }
 
     private void update(final DataSource dataSource) {
@@ -121,7 +126,7 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
         new JdbcTemplate(dataSource).execute(sql);
     }
 
-    private DataSource getDataSource(EntityManager entityManager) {
+    private DataSource getDataSource(final EntityManager entityManager) {
         return ((EntityManagerFactoryInfo) entityManager.getEntityManagerFactory()).getDataSource();
     }
 }
