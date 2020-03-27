@@ -33,10 +33,6 @@ public class OrQueryFilter implements QueryFilter {
         } else if (filters.length() == 1) {
             return filters.head();
         }
-        return "(" +
-                filters.head() +
-                " OR " +
-                filters.tail().reduce((x, y) -> x + " OR " + y) +
-                ")";
+        return String.format("(%s)", filters.mkString(" OR "));
     }
 }

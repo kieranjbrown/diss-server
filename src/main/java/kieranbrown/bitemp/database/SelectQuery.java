@@ -38,10 +38,8 @@ class SelectQuery<T extends BitemporalModel<T>> {
     }
 
     private String getFilters() {
-        //TODO: tidy?
         return filters.length() > 0
-                ? filters.init().foldLeft(" where", (x, y) -> x + " " + mapFilter(y) + " and") + " " +
-                mapFilter(filters.last())
+                ? String.format(" where %s", filters.map(this::mapFilter).mkString(" and "))
                 : "";
     }
 
@@ -68,7 +66,7 @@ class SelectQuery<T extends BitemporalModel<T>> {
 
     private Object getFields() {
         return fields.length() > 0
-                ? fields.keySet().reduce((x, y) -> x + ", " + y)
+                ? fields.keySet().mkString(", ")
                 : "*";
     }
 

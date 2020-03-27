@@ -38,11 +38,11 @@ class InsertQuery<T extends BitemporalModel<T>> {
     }
 
     private Object getFields() {
-        return fields.get(0).map(Tuple2::_1).reduce((x, y) -> x + ", " + y);
+        return fields.get(0).map(Tuple2::_1).mkString(", ");
     }
 
     private String getValues() {
-        return fields.map(x -> x.map(Tuple2::_2).map(QueryUtils::toString).reduce((y, z) -> y + ", " + z))
-                .reduce((x, y) -> x + "), (" + y);
+        return fields.map(x -> x.map(Tuple2::_2).map(QueryUtils::toString).mkString(", "))
+                .mkString("), (");
     }
 }

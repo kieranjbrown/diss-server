@@ -46,11 +46,11 @@ class UpdateQuery<T extends BitemporalModel<T>> {
     private String getFieldsToUpdate() {
         return fields.map(x -> x.map2(QueryUtils::toString))
                 .map(x -> x._1 + " = " + x._2)
-                .reduce((x, y) -> x + ", " + y);
+                .mkString(", ");
     }
 
     private String getFilters() {
         return filters.map(QueryFilter::getFilters)
-                .reduce((x, y) -> x + " AND " + y);
+                .mkString(" AND ");
     }
 }

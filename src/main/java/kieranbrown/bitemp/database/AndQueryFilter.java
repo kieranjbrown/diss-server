@@ -28,10 +28,6 @@ public class AndQueryFilter implements QueryFilter {
         } else if (filters.length() == 1) {
             return filters.head();
         }
-        return "(" +
-                filters.head() +
-                " AND " +
-                filters.tail().reduce((x, y) -> x + " AND " + y) +
-                ")";
+        return String.format("(%s)", filters.mkString(" AND "));
     }
 }

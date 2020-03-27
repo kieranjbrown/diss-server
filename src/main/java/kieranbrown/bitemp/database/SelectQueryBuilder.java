@@ -50,7 +50,6 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
             )
     );
 
-    //TODO: is queryType needed anymore?
     SelectQueryBuilder(final Class<T> clazz) {
         queryClass = clazz;
         this.query = new SelectQuery<>(clazz);
