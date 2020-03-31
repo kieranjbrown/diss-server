@@ -64,7 +64,7 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
                             new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId())))
                     ))
                     .build();
-            System.out.println("firstSql:" + firstSql);
+//            System.out.println("firstSql:" + firstSql);
             new JdbcTemplate(dataSource).execute(firstSql);
 
             final java.util.List<T> toUpdate = new ArrayList<>();
@@ -111,7 +111,7 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
                             new NotQueryFilter(new OrQueryFilter(timeResults.map(y -> new SingleQueryFilter("id", QueryEquality.EQUALS, y.getBitemporalKey().getId()))))
                     ))
                     .build();
-            System.out.println("updateOtherSql:" + updateOthersSql);
+//            System.out.println("updateOtherSql:" + updateOthersSql);
             new JdbcTemplate(dataSource).execute(updateOthersSql);
         }
     }
@@ -122,7 +122,7 @@ public class UpdateQueryBuilder<T extends BitemporalModel<T>> {
                 .addFilters(filters)
                 .build();
 
-        System.out.println(sql);
+//        System.out.println(sql);
         new JdbcTemplate(dataSource).execute(sql);
     }
 

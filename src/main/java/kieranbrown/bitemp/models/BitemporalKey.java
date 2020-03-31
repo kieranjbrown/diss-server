@@ -1,8 +1,8 @@
 package kieranbrown.bitemp.models;
 
+import com.opencsv.bean.CsvCustomBindByPosition;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -15,24 +15,29 @@ import static java.util.Objects.requireNonNull;
 @Embeddable
 public class BitemporalKey implements Serializable {
     @Column(name = "id", nullable = false)
-    private UUID id;
+    @CsvCustomBindByPosition(position = 1, converter = UUIDConverter.class)
+    public UUID id;
 
     @Column(name = "valid_time_start", nullable = false)
-    private LocalDate validTimeStart;
+    @CsvCustomBindByPosition(position = 8, converter = LocalDateConverter.class)
+//    @CsvDate(writeFormat = "yyyyMMdd")
+    public LocalDate validTimeStart;
 
     @Column(name = "valid_time_end", nullable = false)
-    private LocalDate validTimeEnd;
+    @CsvCustomBindByPosition(position = 7, converter = LocalDateConverter.class)
+//    @CsvDate(writeFormat = "yyyyMMdd")
+    public LocalDate validTimeEnd;
+//
+//    private BitemporalKey() {
+//    }
 
-    private BitemporalKey() {
-    }
-
-    private BitemporalKey(final UUID id,
-                          final LocalDate validTimeStart,
-                          final LocalDate validTimeEnd) {
-        this.id = id;
-        this.validTimeStart = validTimeStart;
-        this.validTimeEnd = validTimeEnd;
-    }
+//    public BitemporalKey(final UUID id,
+//                          final LocalDate validTimeStart,
+//                          final LocalDate validTimeEnd) {
+//        this.id = id;
+//        this.validTimeStart = validTimeStart;
+//        this.validTimeEnd = validTimeEnd;
+//    }
 
     public UUID getId() {
         return id;
@@ -44,6 +49,21 @@ public class BitemporalKey implements Serializable {
 
     public LocalDate getValidTimeEnd() {
         return validTimeEnd;
+    }
+
+    public BitemporalKey setId(UUID id) {
+        this.id = id;
+        return this;
+    }
+
+    public BitemporalKey setValidTimeStart(LocalDate validTimeStart) {
+        this.validTimeStart = validTimeStart;
+        return this;
+    }
+
+    public BitemporalKey setValidTimeEnd(LocalDate validTimeEnd) {
+        this.validTimeEnd = validTimeEnd;
+        return this;
     }
 
     @Override
@@ -72,11 +92,7 @@ public class BitemporalKey implements Serializable {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("id", id)
-                .append("valid_time_start", validTimeStart)
-                .append("valid_time_end", validTimeEnd)
-                .toString();
+        return String.format("%s,%s,%s", id, validTimeStart, validTimeEnd);
     }
 
     public static class Builder {
@@ -100,7 +116,7 @@ public class BitemporalKey implements Serializable {
         }
 
         public BitemporalKey build() {
-            return new BitemporalKey(tradeId, validTimeStart, validTimeEnd);
+            return new BitemporalKey().setId(tradeId).setValidTimeStart(validTimeStart).setValidTimeEnd(validTimeEnd);
         }
     }
 }

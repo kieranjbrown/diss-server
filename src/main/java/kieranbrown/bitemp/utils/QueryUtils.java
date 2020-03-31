@@ -11,7 +11,7 @@ public final class QueryUtils {
     }
 
     public static String toString(final Object o) {
-//        if (o == null) return "null";
+//        if (o == null) return "'null'";
         if (o.getClass().equals(LocalDateTime.class)) {
             final LocalDateTime date = (LocalDateTime) o;
             return String.format("'%s-%s-%s %s:%s:%s.000000'",

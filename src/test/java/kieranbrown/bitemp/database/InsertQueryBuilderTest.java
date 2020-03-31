@@ -305,12 +305,25 @@ class InsertQueryBuilderTest {
                 .setBuySellFlag('B')
                 .setStock("GOOGL");
 
+        final Trade trade5 = new Trade().setBitemporalKey(
+                new BitemporalKey.Builder()
+                        .setTradeId(UUID.randomUUID())
+                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
+                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
+                        .build())
+                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setVolume(200)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("TSLA");
+
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(trade1, trade3)
                 .execute(entityManager);
 
         assertThat(assertThrows(OverlappingKeyException.class, () -> QueryBuilderFactory.insert(Trade.class)
-                .fromAll(trade2, trade4)
+                .fromAll(trade2, trade4, trade5)
                 .execute(entityManager)
         )).hasMessage("overlapping valid time for ids = '769fb864-f3b7-4ca5-965e-bcff80088197', '769fb864-f3b7-4ca5-965e-bcff80088198'");
     }

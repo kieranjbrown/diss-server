@@ -1,5 +1,8 @@
 package kieranbrown.bitemp.models;
 
+import com.opencsv.bean.CsvBindByPosition;
+import com.opencsv.bean.CsvDate;
+import com.opencsv.bean.CsvRecurse;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.persistence.Column;
@@ -11,12 +14,17 @@ import java.time.LocalDateTime;
 @SuppressWarnings("unchecked")
 public abstract class BitemporalModel<T extends BitemporalModel> {
     @EmbeddedId
+    @CsvRecurse
     private BitemporalKey bitemporalKey;
 
     @Column(name = "system_time_start")
+    @CsvBindByPosition(position = 6)
+    @CsvDate
     private LocalDateTime systemTimeStart;
 
     @Column(name = "system_time_end")
+    @CsvBindByPosition(position = 5)
+    @CsvDate
     private LocalDateTime systemTimeEnd = LocalDateTime.of(9999, 12, 31, 0, 0, 0);
 
     @Override

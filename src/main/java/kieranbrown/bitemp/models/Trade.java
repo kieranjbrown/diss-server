@@ -1,5 +1,6 @@
 package kieranbrown.bitemp.models;
 
+import com.opencsv.bean.CsvBindByPosition;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.persistence.Column;
@@ -10,20 +11,25 @@ import java.math.BigDecimal;
 public class Trade extends BitemporalModel<Trade> {
 
     @Column(nullable = false)
+    @CsvBindByPosition(position = 4)
     private String stock;
 
     @Column(nullable = false)
+    @CsvBindByPosition(position = 3)
     private BigDecimal price;
 
     @Column(nullable = false)
+    @CsvBindByPosition(position = 9)
     private int volume;
 
     //TODO: enum?
     @Column(nullable = false, name = "buy_sell_flag")
+    @CsvBindByPosition(position = 0)
     private char buySellFlag;
 
     //TODO: enum?
     @Column(nullable = false, name = "market_limit_flag")
+    @CsvBindByPosition(position = 2)
     private char marketLimitFlag;
 
     public String getStock() {

@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public class InsertQueryBuilder<T extends BitemporalModel<T>> {
     private final Class<T> queryClass;
-    private final InsertQuery<T> query;
+    private InsertQuery<T> query;
     private Stream<T> objects;
 
     InsertQueryBuilder(final Class<T> queryClass) {
@@ -47,6 +47,7 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
 
     public InsertQueryBuilder<T> execute(final EntityManager entityManager) throws OverlappingKeyException {
         //TODO: remove coupling? InsertQueryBuilder uses UpdateQueryBuilder and vice versa
+        //TODO: should this only do it for rows with preexisting rows
         QueryBuilderFactory.update(Trade.class)
                 .set("system_time_end", LocalDateTime.now())
                 .where(new OrQueryFilter(objects.map(o -> o.getBitemporalKey().getId()).map(o -> new SingleQueryFilter("id", QueryEquality.EQUALS, o))))
@@ -54,8 +55,8 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
                 .execute(entityManager);
 
         final SelectQueryBuilder<T> selectQueryBuilder = QueryBuilderFactory.select(queryClass);
-        objects.map(BitemporalModel::getBitemporalKey)
-                .forEach(x -> selectQueryBuilder.where(SelectQueryBuilder.validTimeOverlaps.apply(x.getValidTimeStart(), x.getValidTimeEnd())));
+        selectQueryBuilder.where(new OrQueryFilter(objects.map(BitemporalModel::getBitemporalKey)
+                .map(x -> new AndQueryFilter(new SingleQueryFilter("id", QueryEquality.EQUALS, x.getId()), SelectQueryBuilder.validTimeOverlaps.apply(x.getValidTimeStart(), x.getValidTimeEnd())))));
 
         final List<T> overlappingKeys = selectQueryBuilder.execute(entityManager).getResults();
         if (overlappingKeys.length() > 0) {
@@ -69,7 +70,13 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
 
         query.addFields(getFields());
         entityManager.createNativeQuery(query.build()).executeUpdate();
+        reset();
         return this;
+    }
+
+    private void reset() {
+        objects = Stream.of();
+        query = new InsertQuery<>(queryClass);
     }
 
     private List<List<Tuple2<String, Object>>> getFields() {
