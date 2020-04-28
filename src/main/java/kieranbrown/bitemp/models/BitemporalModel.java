@@ -3,6 +3,7 @@ package kieranbrown.bitemp.models;
 import com.opencsv.bean.CsvBindByPosition;
 import com.opencsv.bean.CsvDate;
 import com.opencsv.bean.CsvRecurse;
+import kieranbrown.bitemp.utils.Constants;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.persistence.Column;
@@ -25,7 +26,7 @@ public abstract class BitemporalModel<T extends BitemporalModel> {
     @Column(name = "system_time_end")
     @CsvBindByPosition(position = 5)
     @CsvDate
-    private LocalDateTime systemTimeEnd = LocalDateTime.of(9999, 12, 31, 0, 0, 0);
+    private LocalDateTime systemTimeEnd = Constants.MARIADB_END_SYSTEM_TIME;
 
     @Override
     public String toString() {

@@ -3,12 +3,11 @@ package kieranbrown.bitemp.database;
 import io.vavr.collection.Stream;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
+import kieranbrown.bitemp.utils.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import javax.persistence.EntityManager;
@@ -44,7 +43,8 @@ class InsertQueryBuilderTest {
     }
 
     @Test
-    void insertFromObjectInsertsObject() throws OverlappingKeyException {
+    void insertFromObjectInsertsObject() throws InvalidPeriodException {
+        final LocalDateTime now = LocalDateTime.now();
         final UUID tradeId = UUID.randomUUID();
         final BitemporalKey key = new BitemporalKey.Builder()
                 .setTradeId(tradeId)
@@ -52,8 +52,6 @@ class InsertQueryBuilderTest {
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                 .build();
         final Trade trade = new Trade().setBitemporalKey(key)
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .setVolume(200)
                 .setPrice(new BigDecimal("123.45"))
                 .setMarketLimitFlag('M')
@@ -62,27 +60,31 @@ class InsertQueryBuilderTest {
 
         QueryBuilderFactory.insert(Trade.class).from(trade).execute(entityManager);
 
+        final Trade results = (Trade) entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2 and id = ?3", Trade.class)
+                .setParameter(1, LocalDate.of(2020, 1, 20))
+                .setParameter(2, LocalDate.of(2020, 1, 21))
+                .setParameter(3, tradeId)
+                .getResultList()
+                .get(0);
         assertThat(
-                entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2 and id = ?3")
-                        .setParameter(1, LocalDate.of(2020, 1, 20))
-                        .setParameter(2, LocalDate.of(2020, 1, 21))
-                        .setParameter(3, tradeId)
-                        .getResultList()
-                        .get(0))
+                results)
                 .isNotNull()
                 .usingRecursiveComparison()
+                .ignoringFields("systemTimeStart", "systemTimeEnd")
                 .isEqualTo(trade);
+
+        assertThat(results.getSystemTimeStart()).isAfter(now);
+        assertThat(results.getSystemTimeEnd()).isEqualToIgnoringNanos(Constants.MARIADB_END_SYSTEM_TIME);
     }
 
     @Test
-    void canInsertMultipleObjectsAtOnce() throws OverlappingKeyException {
+    void canInsertMultipleObjectsAtOnce() throws InvalidPeriodException {
+        final LocalDateTime now = LocalDateTime.now();
         final Trade trade1 = new Trade().setBitemporalKey(new BitemporalKey.Builder()
                 .setTradeId(UUID.randomUUID())
                 .setValidTimeStart(LocalDate.of(2020, 1, 20))
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                 .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .setVolume(200)
                 .setPrice(new BigDecimal("123.45"))
                 .setMarketLimitFlag('M')
@@ -94,8 +96,6 @@ class InsertQueryBuilderTest {
                 .setValidTimeStart(LocalDate.of(2020, 1, 20))
                 .setValidTimeEnd(LocalDate.of(2020, 1, 21))
                 .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .setVolume(200)
                 .setPrice(new BigDecimal("123.45"))
                 .setMarketLimitFlag('M')
@@ -103,228 +103,50 @@ class InsertQueryBuilderTest {
                 .setStock("GOOGL");
 
         QueryBuilderFactory.insert(Trade.class).fromAll(trade1, trade2).execute(entityManager);
-        assertTradesAreEqual(trade1, trade2);
+        assertTradesAreEqual(trade1, trade2, now);
 
         QueryBuilderFactory.insert(Trade.class).fromAll(io.vavr.collection.List.of(trade1, trade2)).execute(entityManager);
-        assertTradesAreEqual(trade1, trade2);
+        assertTradesAreEqual(trade1, trade2, now);
 
         QueryBuilderFactory.insert(Trade.class).fromAll(Stream.of(trade1, trade2)).execute(entityManager);
-        assertTradesAreEqual(trade1, trade2);
+        assertTradesAreEqual(trade1, trade2, now);
     }
 
     @SuppressWarnings("unchecked")
-    private void assertTradesAreEqual(final Trade trade1, final Trade trade2) {
-        final List arrayResults = entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2")
+    private void assertTradesAreEqual(final Trade trade1, final Trade trade2, final LocalDateTime now) {
+        final List<Trade> arrayResults = entityManager.createNativeQuery("select * from reporting.trade_data where valid_time_start = ?1 and valid_time_end = ?2", Trade.class)
                 .setParameter(1, LocalDate.of(2020, 1, 20))
                 .setParameter(2, LocalDate.of(2020, 1, 21))
                 .getResultList();
         assertThat(arrayResults).isNotNull().hasSize(2);
-        assertThat(arrayResults.get(0)).usingRecursiveComparison().isEqualTo(trade1);
-        assertThat(arrayResults.get(1)).usingRecursiveComparison().isEqualTo(trade2);
+        assertThat(arrayResults.get(0)).usingRecursiveComparison().ignoringFields("systemTimeStart", "systemTimeEnd").isEqualTo(trade1);
+        assertThat(arrayResults.get(0).getSystemTimeStart()).isAfter(now);
+        assertThat(arrayResults.get(0).getSystemTimeEnd()).isEqualToIgnoringNanos(Constants.MARIADB_END_SYSTEM_TIME);
+
+        assertThat(arrayResults.get(1)).usingRecursiveComparison().ignoringFields("systemTimeStart", "systemTimeEnd").isEqualTo(trade2);
+        assertThat(arrayResults.get(1).getSystemTimeStart()).isAfter(now);
+        assertThat(arrayResults.get(1).getSystemTimeEnd()).isEqualToIgnoringNanos(Constants.MARIADB_END_SYSTEM_TIME);
 
         entityManager.createNativeQuery("delete from reporting.trade_data").executeUpdate();
     }
 
     @Test
-    void insertFromObjectUpdatesExistingSystemTime() throws OverlappingKeyException {
-        final LocalDateTime now = LocalDateTime.now();
-        final UUID tradeId1 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
-        final UUID tradeId2 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088198");
-        final UUID tradeId3 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088199");
-        final Trade trade1 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId1)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 20))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .build())
+    void insertThrowsForUnbalancedValidTime() {
+        final UUID tradeId = UUID.randomUUID();
+        final InsertQueryBuilder<Trade> queryBuilder = QueryBuilderFactory.insert(Trade.class).from(new Trade().setBitemporalKey(new BitemporalKey.Builder()
+                .setTradeId(tradeId)
+                .setValidTimeStart(LocalDate.of(2020, 1, 21))
+                .setValidTimeEnd(LocalDate.of(2020, 1, 20))
+                .build())
                 .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
+                .setSystemTimeEnd(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
                 .setVolume(200)
                 .setPrice(new BigDecimal("123.45"))
                 .setMarketLimitFlag('M')
                 .setBuySellFlag('B')
-                .setStock("GOOGL");
+                .setStock("GOOGL"));
 
-        final Trade trade2 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId1)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 21))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 23))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("GOOGL");
-
-        final Trade trade3 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId2)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 24))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 25))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("MSFT");
-
-        final Trade trade4 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId2)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 25))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 29))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("MSFT");
-
-        final Trade trade5 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId3)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 25))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 29))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("AAPL");
-
-        QueryBuilderFactory.insert(Trade.class)
-                .fromAll(trade1, trade3)
-                .execute(entityManager);
-
-        final List originalResults = entityManager.createNativeQuery("select * from reporting.trade_data order by id ASC", Trade.class)
-                .getResultList();
-
-        assertThat(originalResults.size()).isEqualTo(2);
-        assertThat(originalResults.get(0))
-                .isNotNull()
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
-
-        assertThat(originalResults.get(1))
-                .isNotNull()
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
-
-        QueryBuilderFactory.insert(Trade.class)
-                .fromAll(trade2, trade4, trade5)
-                .execute(entityManager);
-
-        final List<Trade> results = new JdbcTemplate(dataSource)
-                .query("select id, valid_time_start, valid_time_end, system_time_start, system_time_end, volume, price, market_limit_flag, buy_sell_flag, stock from reporting.trade_data order by id ASC, system_time_start ASC", new BeanPropertyRowMapper<>(Trade.class));
-
-        assertThat(results).isNotNull().hasSize(5);
-
-        assertThat(results.get(0))
-                .hasFieldOrPropertyWithValue("stock", "GOOGL")
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0));
-        assertThat(results.get(0).getSystemTimeEnd()).isBetween(now.minusSeconds(1), now.plusSeconds(1));
-
-        assertThat(results.get(1))
-                .hasFieldOrPropertyWithValue("stock", "GOOGL")
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
-
-        assertThat(results.get(2))
-                .hasFieldOrPropertyWithValue("stock", "MSFT")
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 20, 3, 45, 0));
-        assertThat(results.get(2).getSystemTimeEnd()).isBetween(now.minusSeconds(1), now.plusSeconds(1));
-
-        assertThat(results.get(3))
-                .hasFieldOrPropertyWithValue("stock", "MSFT")
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
-
-        assertThat(results.get(4))
-                .hasFieldOrPropertyWithValue("stock", "AAPL")
-                .hasFieldOrPropertyWithValue("systemTimeStart", LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .hasFieldOrPropertyWithValue("systemTimeEnd", LocalDateTime.of(9999, 12, 31, 0, 0, 0));
-    }
-
-    @Test
-    void insertFromObjectThrowsForOverlappingValidTime() throws OverlappingKeyException {
-        final UUID tradeId1 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088197");
-        final UUID tradeId2 = UUID.fromString("769fb864-f3b7-4ca5-965e-bcff80088198");
-        final Trade trade1 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId1)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("GOOGL");
-
-        final Trade trade2 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId1)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 19))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 20))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 21, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("GOOGL");
-
-        final Trade trade3 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId2)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("GOOGL");
-
-        final Trade trade4 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(tradeId2)
-                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("GOOGL");
-
-        final Trade trade5 = new Trade().setBitemporalKey(
-                new BitemporalKey.Builder()
-                        .setTradeId(UUID.randomUUID())
-                        .setValidTimeStart(LocalDate.of(2020, 1, 18))
-                        .setValidTimeEnd(LocalDate.of(2020, 1, 21))
-                        .build())
-                .setSystemTimeStart(LocalDateTime.of(2020, 1, 20, 3, 45, 0))
-                .setVolume(200)
-                .setPrice(new BigDecimal("123.45"))
-                .setMarketLimitFlag('M')
-                .setBuySellFlag('B')
-                .setStock("TSLA");
-
-        QueryBuilderFactory.insert(Trade.class)
-                .fromAll(trade1, trade3)
-                .execute(entityManager);
-
-        assertThat(assertThrows(OverlappingKeyException.class, () -> QueryBuilderFactory.insert(Trade.class)
-                .fromAll(trade2, trade4, trade5)
-                .execute(entityManager)
-        )).hasMessage("overlapping valid time for ids = '769fb864-f3b7-4ca5-965e-bcff80088197', '769fb864-f3b7-4ca5-965e-bcff80088198'");
+        assertThat(assertThrows(InvalidPeriodException.class, () -> queryBuilder.execute(entityManager)))
+                .hasMessage("Valid Time End is before Start for ID = '" + tradeId.toString() + "'");
     }
 }

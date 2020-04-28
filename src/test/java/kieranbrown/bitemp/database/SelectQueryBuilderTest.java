@@ -28,7 +28,7 @@ class SelectQueryBuilderTest {
     private DataSource dataSource;
 
     @Test
-    void canEvaluateSingleSelectQueryAndReturnResult() throws OverlappingKeyException {
+    void canEvaluateSingleSelectQueryAndReturnResult() throws InvalidPeriodException {
         final Trade trade = new Trade().setBitemporalKey(
                 new BitemporalKey.Builder()
                         .setTradeId(UUID.randomUUID())
@@ -65,7 +65,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void settingFilterAffectsQuery() throws OverlappingKeyException {
+    void settingFilterAffectsQuery() throws InvalidPeriodException {
         QueryBuilderFactory.insert(Trade.class)
                 .fromAll(List.of(
                         new Trade().setBitemporalKey(
@@ -146,7 +146,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void systemTimeBetweenFilterAffectsResults() throws OverlappingKeyException {
+    void systemTimeBetweenFilterAffectsResults() throws InvalidPeriodException {
         final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
         final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
 
@@ -221,7 +221,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void systemTimeFromFilterAffectsResults() throws OverlappingKeyException {
+    void systemTimeFromFilterAffectsResults() throws OverlappingKeyException, InvalidPeriodException {
         final LocalDateTime startRange = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
         final LocalDateTime endRange = LocalDateTime.of(2020, 1, 20, 0, 0, 0);
 
@@ -296,7 +296,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void systemTimeAsOfFilterAffectsResults() throws OverlappingKeyException {
+    void systemTimeAsOfFilterAffectsResults() throws InvalidPeriodException {
         final LocalDateTime time = LocalDateTime.of(2020, 1, 10, 0, 0, 0);
 
         QueryBuilderFactory.insert(Trade.class)
@@ -370,7 +370,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeContainsFilterAffectsResults() throws OverlappingKeyException {
+    void validTimeContainsFilterAffectsResults() throws InvalidPeriodException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
@@ -458,7 +458,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeEqualsFilterAffectsResults() throws OverlappingKeyException {
+    void validTimeEqualsFilterAffectsResults() throws InvalidPeriodException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
@@ -533,7 +533,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimePrecedesFilterAffectsResults() throws OverlappingKeyException {
+    void validTimePrecedesFilterAffectsResults() throws InvalidPeriodException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
 
         QueryBuilderFactory.insert(Trade.class)
@@ -620,7 +620,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeImmediatelyPrecedesFilterAffectsResults() throws OverlappingKeyException {
+    void validTimeImmediatelyPrecedesFilterAffectsResults() throws InvalidPeriodException {
         final LocalDate startDate = LocalDate.of(2020, 1, 10);
 
         QueryBuilderFactory.insert(Trade.class)
@@ -694,7 +694,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeSucceedsFilterAffectsResults() throws OverlappingKeyException {
+    void validTimeSucceedsFilterAffectsResults() throws InvalidPeriodException {
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
         QueryBuilderFactory.insert(Trade.class)
@@ -768,7 +768,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void validTimeImmediatelySucceedsFilterAffectsResults() throws OverlappingKeyException {
+    void validTimeImmediatelySucceedsFilterAffectsResults() throws InvalidPeriodException {
         final LocalDate endDate = LocalDate.of(2020, 1, 20);
 
         QueryBuilderFactory.insert(Trade.class)
@@ -843,7 +843,7 @@ class SelectQueryBuilderTest {
     }
 
     @Test
-    void canRetrieveTradesOverlappingValidTimeRange() throws OverlappingKeyException {
+    void canRetrieveTradesOverlappingValidTimeRange() throws InvalidPeriodException {
         final LocalDate startDate = LocalDate.of(2020, 1, 15);
         final LocalDate endDate = LocalDate.of(2020, 1, 17);
 
