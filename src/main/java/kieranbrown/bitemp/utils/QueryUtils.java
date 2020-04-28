@@ -28,6 +28,9 @@ public final class QueryUtils {
                     StringUtils.leftPad(String.valueOf(date.getMonthValue()), 2, "0"),
                     StringUtils.leftPad(String.valueOf(date.getDayOfMonth()), 2, "0"));
         } else if (o.getClass().equals(String.class) || o.getClass().equals(Character.class) || o.getClass().equals(UUID.class)) {
+            if (o.getClass().equals(String.class) && "CURRENT_TIMESTAMP".equals(o)) {
+                return (String) o;
+            }
             return String.format("'%s'", o);
         }
         return o.toString();

@@ -42,4 +42,9 @@ class QueryUtilsTest {
     void toStringFormatsBigDecimalCorrectly() {
         assertThat(QueryUtils.toString(new BigDecimal("123.45"))).isNotNull().isEqualTo("123.45");
     }
+
+    @Test
+    void toStringFormatsSqlCurrentTimestampCorrectly() {
+        assertThat(QueryUtils.toString("CURRENT_TIMESTAMP")).isNotNull().isEqualTo("CURRENT_TIMESTAMP");
+    }
 }
