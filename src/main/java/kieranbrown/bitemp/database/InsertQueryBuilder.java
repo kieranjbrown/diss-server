@@ -5,12 +5,11 @@ import io.vavr.collection.List;
 import io.vavr.collection.Stream;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.BitemporalModel;
-import kieranbrown.bitemp.models.Trade;
+import kieranbrown.bitemp.utils.Constants;
 
 import javax.persistence.Column;
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class InsertQueryBuilder<T extends BitemporalModel<T>> {
@@ -45,29 +44,13 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
         return this;
     }
 
-    public InsertQueryBuilder<T> execute(final EntityManager entityManager) throws OverlappingKeyException {
-        //TODO: remove coupling? InsertQueryBuilder uses UpdateQueryBuilder and vice versa
-        //TODO: should this only do it for rows with preexisting rows
-        QueryBuilderFactory.update(Trade.class)
-                .set("system_time_end", LocalDateTime.now())
-                .where(new OrQueryFilter(objects.map(o -> o.getBitemporalKey().getId()).map(o -> new SingleQueryFilter("id", QueryEquality.EQUALS, o))))
-                .where(new SingleQueryFilter("system_time_end", QueryEquality.EQUALS, LocalDateTime.of(9999, 12, 31, 0, 0, 0)))
-                .execute(entityManager);
-
-        final SelectQueryBuilder<T> selectQueryBuilder = QueryBuilderFactory.select(queryClass);
-        selectQueryBuilder.where(new OrQueryFilter(objects.map(BitemporalModel::getBitemporalKey)
-                .map(x -> new AndQueryFilter(new SingleQueryFilter("id", QueryEquality.EQUALS, x.getId()), SelectQueryBuilder.validTimeOverlaps.apply(x.getValidTimeStart(), x.getValidTimeEnd())))));
-
-        final List<T> overlappingKeys = selectQueryBuilder.execute(entityManager).getResults();
-        if (overlappingKeys.length() > 0) {
-            throw new OverlappingKeyException(
-                    String.format("overlapping valid time for ids = %s",
-                            overlappingKeys.map(BitemporalModel::getBitemporalKey)
-                                    .map(BitemporalKey::getId)
-                                    .map(x -> String.format("'%s'", x))
-                                    .mkString(", ")));
+    public InsertQueryBuilder<T> execute(final EntityManager entityManager) throws InvalidPeriodException {
+        for (T x : objects) {
+            final BitemporalKey key = x.getBitemporalKey();
+            if (key.validTimeEnd.isBefore(key.validTimeStart)) {
+                throw new InvalidPeriodException(String.format("Valid Time End is before Start for ID = '%s'", key.getId()));
+            }
         }
-
         query.addFields(getFields());
         entityManager.createNativeQuery(query.build()).executeUpdate();
         reset();
@@ -87,8 +70,8 @@ public class InsertQueryBuilder<T extends BitemporalModel<T>> {
                         List.of(new Tuple2<>("id", o.getBitemporalKey().getId()),
                                 new Tuple2<>("valid_time_start", o.getBitemporalKey().getValidTimeStart()),
                                 new Tuple2<>("valid_time_end", o.getBitemporalKey().getValidTimeEnd()),
-                                new Tuple2<>("system_time_start", o.getSystemTimeStart()),
-                                new Tuple2<>("system_time_end", o.getSystemTimeEnd()))))
+                                new Tuple2<>("system_time_start", "CURRENT_TIMESTAMP"),
+                                new Tuple2<>("system_time_end", Constants.MARIADB_END_SYSTEM_TIME))))
                 .toList();
     }
 
