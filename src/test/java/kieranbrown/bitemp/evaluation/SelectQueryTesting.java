@@ -1,16 +1,13 @@
 package kieranbrown.bitemp.evaluation;
 
 import io.vavr.collection.List;
-import kieranbrown.bitemp.database.OrQueryFilter;
 import kieranbrown.bitemp.database.QueryBuilderFactory;
 import kieranbrown.bitemp.database.QueryEquality;
-import kieranbrown.bitemp.database.SingleQueryFilter;
 import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
 import kieranbrown.bitemp.utils.QueryUtils;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -372,32 +369,6 @@ class SelectQueryTesting {
                 .toJavaList(), false);
     }
 
-    @Disabled("why tf won't this id = ? work")
-    @Test
-    @DisplayName("all records for ID's in range (...) from system time X to Y")
-    void implementationSelectQueryTwo() throws InterruptedException {
-        testQueryBitemporal(() -> QueryBuilderFactory.select(Trade.class)
-                .where(
-                        new OrQueryFilter(
-                                List.of(
-                                        "769fb864-f3b7-4ca5-965e-bcff80088197",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088297",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088397",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088497",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088597",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088697",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088797",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088897",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088997",
-                                        "769fb864-f3b7-4ca5-965e-bcff80088097"
-                                )
-                                        .map(x -> new SingleQueryFilter("id", QueryEquality.EQUALS, x))))
-                .systemTimeBetween(LocalDateTime.of(2020, 5, 2, 4, 0, 0), LocalDateTime.of(2020, 5, 2, 5, 0, 0))
-                .execute(entityManager)
-                .getResults()
-                .toJavaList(), false);
-    }
-
     @Test
     @DisplayName("all records with system time as of X, with valid time preceding X")
     void implementationSelectQueryThree() throws InterruptedException {
@@ -429,12 +400,6 @@ class SelectQueryTesting {
                         " where stock = 'AAPL'" +
                         " and valid_time_start >= TIMESTAMP '2020-03-12 00:00:00.000000'", Trade.class)
                 .getResultList(), true);
-    }
-
-    @Test
-    @DisplayName("all records for ID's in range (...) from system time X to Y, ordered by system time")
-    void implementedSelectQueryTwo() {
-
     }
 
     @Test
