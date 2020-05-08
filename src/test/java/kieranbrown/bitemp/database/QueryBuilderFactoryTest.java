@@ -42,4 +42,15 @@ class QueryBuilderFactoryTest {
         assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.update(null)))
                 .hasMessage("class cannot be null");
     }
+
+    @Test
+    void canCreateDeleteQueryBuilder() {
+        assertThat(QueryBuilderFactory.delete(Trade.class)).isNotNull();
+    }
+
+    @Test
+    void deleteThrowsForNullInput() {
+        assertThat(assertThrows(NullPointerException.class, () -> QueryBuilderFactory.delete(null)))
+                .hasMessage("class cannot be null");
+    }
 }

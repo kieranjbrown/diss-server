@@ -14,13 +14,14 @@ public final class QueryUtils {
 //        if (o == null) return "'null'";
         if (o.getClass().equals(LocalDateTime.class)) {
             final LocalDateTime date = (LocalDateTime) o;
-            return String.format("'%s-%s-%s %s:%s:%s.000000'",
+            return String.format("'%s-%s-%s %s:%s:%s.%s'",
                     date.getYear(),
                     StringUtils.leftPad(String.valueOf(date.getMonthValue()), 2, "0"),
                     StringUtils.leftPad(String.valueOf(date.getDayOfMonth()), 2, "0"),
                     StringUtils.leftPad(String.valueOf(date.getHour()), 2, "0"),
                     StringUtils.leftPad(String.valueOf(date.getMinute()), 2, "0"),
-                    StringUtils.leftPad(String.valueOf(date.getSecond()), 2, "0"));
+                    StringUtils.leftPad(String.valueOf(date.getSecond()), 2, "0"),
+                    StringUtils.substring(String.valueOf(date.getNano()), 0, 6));
         } else if (o.getClass().equals(LocalDate.class)) {
             final LocalDate date = (LocalDate) o;
             return String.format("'%s-%s-%s'",

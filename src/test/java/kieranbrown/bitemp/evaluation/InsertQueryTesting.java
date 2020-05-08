@@ -5,9 +5,11 @@ import com.opencsv.bean.ColumnPositionMappingStrategy;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import io.vavr.collection.List;
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator;
 import kieranbrown.bitemp.database.InsertQueryBuilder;
 import kieranbrown.bitemp.database.InvalidPeriodException;
 import kieranbrown.bitemp.database.QueryBuilderFactory;
+import kieranbrown.bitemp.models.BitemporalKey;
 import kieranbrown.bitemp.models.Trade;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,8 +36,12 @@ import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @Disabled
@@ -44,7 +50,8 @@ import java.util.function.Consumer;
 @Transactional
 class InsertQueryTesting {
 
-    private final List<Integer> thresholds = List.of(100, 1000, 10000, 100000, 1000000);
+    //    private final List<Integer> thresholds = List.of(100, 1000, 10000, 100000, 1000000);
+    private final List<Integer> thresholds = List.of(1);
     @PersistenceContext
     private EntityManager entityManager;
     @Autowired
@@ -80,6 +87,32 @@ class InsertQueryTesting {
                 .withFilter(line -> !line[2].equals("123.4"))
                 .build();
         return csvToBean.stream();
+    }
+
+    @Test
+    void memorySize() {
+        long objectSize = ObjectSizeCalculator.getObjectSize(new Trade()
+                .setVolume(123)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("AAPL")
+                .setSystemTimeStart(LocalDateTime.of(2020, 2, 1, 2, 2, 2))
+                .setSystemTimeEnd(LocalDateTime.of(2020, 2, 2, 2, 2, 2))
+                .setBitemporalKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setValidTimeStart(LocalDate.of(2020, 2, 2)).setValidTimeEnd(LocalDate.of(2020, 2, 3)).build()));
+        System.out.println("mine:" + objectSize);
+
+        objectSize = ObjectSizeCalculator.getObjectSize(new Trade()
+                .setVolume(123)
+                .setPrice(new BigDecimal("123.45"))
+                .setMarketLimitFlag('M')
+                .setBuySellFlag('B')
+                .setStock("AAPL")
+                .setBitemporalKey(new BitemporalKey.Builder().setTradeId(UUID.randomUUID()).setValidTimeStart(LocalDate.of(2020, 2, 2)).setValidTimeEnd(LocalDate.of(2020, 2, 3)).build()));
+        System.out.println("theirs:" + objectSize);
+
+        System.out.println("size of my query: " + ObjectSizeCalculator.getObjectSize("INSERT INTO reporting.trade_data (stock, price, volume, buy_sell_flag, market_limit_flag, id, valid_time_start, valid_time_end, system_time_start, system_time_end) VALUES ('AAPL', 123.45, 250, 'B', 'M', '1c876b60-7cf3-484e-b4d8-aa510838dce0', '2020-01-20', '2020-01-21', '2020-02-02 00:00:00.000000', '2038-01-19 03:14:07.000000')"));
+        System.out.println("size of their query: " + ObjectSizeCalculator.getObjectSize("INSERT INTO reporting.trade_data (stock, price, volume, buy_sell_flag, market_limit_flag, id, valid_time_start, valid_time_end) VALUES ('AAPL', 123.45, 250, 'B', 'M', '1c876b60-7cf3-484e-b4d8-aa510838dce0', '2020-01-20', '2020-01-21')"));
     }
 
     @Test
@@ -160,7 +193,7 @@ class InsertQueryTesting {
         @Bean
         public DataSource dataSource() {
             System.out.println("creating right datasource");
-            return DataSourceBuilder.create().driverClassName("com.mysql.cj.jdbc.Driver").url("jdbc:mysql://localhost:3306").username("root").password("Kieran12").build();
+            return DataSourceBuilder.create().driverClassName("com.mysql.cj.jdbc.Driver").url("jdbc:mysql://localhost:3306").username("root").password("password").build();
         }
 
         @Bean

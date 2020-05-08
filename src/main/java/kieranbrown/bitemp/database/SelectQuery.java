@@ -37,14 +37,15 @@ class SelectQuery<T extends BitemporalModel<T>> {
                 .isEquals();
     }
 
+    public SelectQuery<T> setFields(final Map<String, Object> fields) {
+        this.fields = requireNonNull(fields, "fields cannot be null");
+        return this;
+    }
+
     private String getFilters() {
         return filters.length() > 0
                 ? String.format(" where %s", filters.map(this::mapFilter).mkString(" and "))
                 : "";
-    }
-
-    private String mapFilter(final QueryFilter filter) {
-        return filter.getFilters();
     }
 
     /*
@@ -54,7 +55,6 @@ class SelectQuery<T extends BitemporalModel<T>> {
         this.limit = limit;
         return this;
     }
-
     public String build() {
         return "SELECT " +
                 getFields() +
@@ -64,24 +64,23 @@ class SelectQuery<T extends BitemporalModel<T>> {
                 getLimit();
     }
 
+    public SelectQuery<T> setFilters(final List<QueryFilter> filters) {
+        this.filters = filters;
+        return this;
+    }
+
+    private String mapFilter(final QueryFilter filter) {
+        return filter.getFilters();
+    }
+
     private Object getFields() {
         return fields.length() > 0
                 ? fields.keySet().mkString(", ")
                 : "*";
     }
 
-    public SelectQuery<T> setFields(final Map<String, Object> fields) {
-        this.fields = requireNonNull(fields, "fields cannot be null");
-        return this;
-    }
-
     private String getTableName() {
         return queryClass.getAnnotation(Entity.class).name();
-    }
-
-    public SelectQuery<T> setFilters(final List<QueryFilter> filters) {
-        this.filters = filters;
-        return this;
     }
 
     private String getLimit() {

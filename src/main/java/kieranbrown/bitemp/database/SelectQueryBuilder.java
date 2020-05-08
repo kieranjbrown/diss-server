@@ -186,6 +186,7 @@ public class SelectQueryBuilder<T extends BitemporalModel<T>> {
         requireNonNull(entityManager, "entityManager cannot be null");
         query.setFilters(filters);
         results = Option.of(List.ofAll(entityManager.createNativeQuery(query.build(), queryClass).getResultList()));
+        System.out.println("QUERYBUILT: " + query.build());
         return this;
     }
 
